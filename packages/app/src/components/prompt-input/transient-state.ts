@@ -1,6 +1,7 @@
 import { createComputed, on, type Accessor } from "solid-js"
 import { createStore, type SetStoreFunction } from "solid-js/store"
 import type { PromptHistoryEntry } from "./history"
+import type { HintLevel } from "./submit"
 
 export type PromptInputTransientState = {
   popover: "at" | "slash" | null
@@ -12,6 +13,7 @@ export type PromptInputTransientState = {
   draggingType: "image" | "@mention" | null
   mode: "normal" | "shell"
   applyingHistory: boolean
+  hintLevel: HintLevel | undefined
 }
 
 function resetPromptInputTransientState(setStore: SetStoreFunction<PromptInputTransientState>) {
@@ -24,6 +26,7 @@ function resetPromptInputTransientState(setStore: SetStoreFunction<PromptInputTr
     draggingType: null,
     mode: "normal",
     applyingHistory: false,
+    hintLevel: undefined,
   })
 }
 
@@ -38,6 +41,7 @@ export function createPromptInputTransientState(identity: Accessor<unknown>, pla
     draggingType: null,
     mode: "normal",
     applyingHistory: false,
+    hintLevel: undefined,
   })
 
   createComputed(on(identity, () => resetPromptInputTransientState(setStore), { defer: true }))
