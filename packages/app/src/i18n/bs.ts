@@ -1254,4 +1254,8 @@ export const dict = {
   "error.childStore.persistedProjectIconCreateFailed": "Nije uspjelo kreiranje trajne ikone projekta",
   "error.childStore.storeCreateFailed": "Nije uspjelo kreiranje skladišta",
   "terminal.connectionLost.abnormalClose": "WebSocket zatvoren nenormalno: {{code}}",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

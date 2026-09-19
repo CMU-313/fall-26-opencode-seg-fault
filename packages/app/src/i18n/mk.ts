@@ -1163,4 +1163,8 @@ export const dict = {
   "workspace.reset.archived.many": "{{count}} сесиите ќе бидат архивирани.",
   "workspace.reset.note": "Ова ќе го ресетира работниот простор за да одговара на стандардната гранка.",
   "dialog.usageExceeded.dontShowAgain": "Не прикажувај повторно",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

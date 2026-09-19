@@ -1247,4 +1247,8 @@ export const dict = {
   "workspace.reset.archived.one": "1 sesi akan diarsipkan.",
   "workspace.reset.archived.many": "{{count}} sesi akan diarsipkan.",
   "workspace.reset.note": "Ini akan mengatur ulang ruang kerja agar cocok dengan cabang bawaan.",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

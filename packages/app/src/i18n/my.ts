@@ -1173,4 +1173,8 @@ export const dict = {
   "workspace.reset.archived.many": "{{count}} ဆက်ရှင်များကို သိမ်းဆည်းထားပါမည်။",
   "workspace.reset.note": "၎င်းသည် မူရင်းဌာနခွဲနှင့် ကိုက်ညီစေရန် အလုပ်ခွင်ကို ပြန်လည်သတ်မှတ်ပါမည်။",
   "dialog.usageExceeded.dontShowAgain": "ထပ်မပြပါနှင့်",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

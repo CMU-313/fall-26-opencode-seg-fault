@@ -1150,4 +1150,8 @@ export const dict: Record<string, string> = {
   "workspace.reset.archived.many": "සැසි {{count}} සංරක්ෂිත වනු ඇත.",
   "workspace.reset.note": "මෙය පෙරනිමි ශාඛාවට ගැලපෙන පරිදි වැඩබිම නැවත සකසනු ඇත.",
   "dialog.usageExceeded.dontShowAgain": "නැවත නොපෙන්වන්න",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

@@ -1167,4 +1167,8 @@ export const dict = {
   "workspace.reset.archived.many": "A {{count}} munkamenetek archiválva lesznek.",
   "workspace.reset.note": "Ezzel visszaállítja a munkaterületet, hogy megfeleljen az alapértelmezett ágnak.",
   "dialog.usageExceeded.dontShowAgain": "Ne jelenjen meg újra",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

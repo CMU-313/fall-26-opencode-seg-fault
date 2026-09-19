@@ -1259,4 +1259,8 @@ export const dict = {
   "error.childStore.persistedProjectIconCreateFailed": "Не удалось создать постоянный значок проекта",
   "error.childStore.storeCreateFailed": "Не удалось создать хранилище",
   "terminal.connectionLost.abnormalClose": "WebSocket закрыт аварийно: {{code}}",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

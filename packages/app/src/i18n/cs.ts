@@ -1160,4 +1160,8 @@ export const dict = {
   "workspace.reset.archived.many": "{{count}} relací bude archivováno.",
   "workspace.reset.note": "Tím se pracovní prostor resetuje tak, aby odpovídal výchozí větvi.",
   "dialog.usageExceeded.dontShowAgain": "Znovu nezobrazovat",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

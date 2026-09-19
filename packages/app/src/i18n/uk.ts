@@ -1264,4 +1264,8 @@ export const dict = {
   "workspace.reset.archived.one": "1 сесію буде заархівовано.",
   "workspace.reset.archived.many": "{{count}} сесій буде заархівовано.",
   "workspace.reset.note": "Це скине робочу область, щоб вона відповідала гілці за замовчуванням.",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

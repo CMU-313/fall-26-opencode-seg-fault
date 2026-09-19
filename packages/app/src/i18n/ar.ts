@@ -1168,4 +1168,8 @@ export const dict = {
   "error.childStore.persistedProjectIconCreateFailed": "فشل إنشاء أيقونة المشروع الدائمة",
   "error.childStore.storeCreateFailed": "فشل إنشاء المخزن",
   "terminal.connectionLost.abnormalClose": "تم إغلاق WebSocket بشكل غير طبيعي: {{code}}",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }
