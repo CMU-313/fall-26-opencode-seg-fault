@@ -442,6 +442,50 @@ const boot = Effect.fn("test.boot")(function* (input?: { title?: string }) {
   return { prompt, run, sessions, chat }
 })
 
+noLLMServer.instance("applies selected hint level to user system prompt", () =>
+  Effect.gen(function* () {
+    const prompt = yield* SessionPrompt.Service
+    const sessions = yield* Session.Service
+    const chat = yield* sessions.create({ title: "Hint levels" })
+
+    const subtle = yield* prompt.prompt({
+      sessionID: chat.id,
+      agent: "build",
+      noReply: true,
+      hintLevel: "subtle",
+      parts: [{ type: "text", text: "help me solve this" }],
+    })
+
+    const moderate = yield* prompt.prompt({
+      sessionID: chat.id,
+      agent: "build",
+      noReply: true,
+      hintLevel: "moderate",
+      parts: [{ type: "text", text: "help me solve this" }],
+    })
+
+    const detailed = yield* prompt.prompt({
+      sessionID: chat.id,
+      agent: "build",
+      noReply: true,
+      hintLevel: "detailed",
+      parts: [{ type: "text", text: "help me solve this" }],
+    })
+
+    if (subtle.info.role !== "user") throw new Error("expected user message")
+    if (moderate.info.role !== "user") throw new Error("expected user message")
+    if (detailed.info.role !== "user") throw new Error("expected user message")
+
+    expect(subtle.info.system).toContain("subtle hint")
+    expect(moderate.info.system).toContain("moderate hint")
+    expect(detailed.info.system).toContain("detailed hint")
+
+    expect(subtle.info.system).not.toBe(moderate.info.system)
+    expect(moderate.info.system).not.toBe(detailed.info.system)
+    expect(subtle.info.system).not.toBe(detailed.info.system)
+  }),
+)
+
 // Loop semantics
 
 noLLMServer.instance(
