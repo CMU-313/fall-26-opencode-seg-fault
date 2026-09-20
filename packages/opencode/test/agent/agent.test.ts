@@ -50,6 +50,7 @@ it.instance("returns default native agents when no config", () =>
     const names = agents.map((a) => a.name)
     expect(names).toContain("build")
     expect(names).toContain("plan")
+    expect(names).toContain("hint")
     expect(names).toContain("general")
     expect(names).toContain("explore")
     expect(names).toContain("compaction")
@@ -87,6 +88,28 @@ it.instance("plan agent denies the general subagent by default", () =>
     expect(Permission.evaluate("task", "general", plan!.permission).action).toBe("deny")
     expect(Permission.evaluate("task", "explore", plan!.permission).action).toBe("allow")
     expect(Permission.evaluate("task", "custom", plan!.permission).action).toBe("allow")
+  }),
+)
+
+it.instance("hint agent provides read-only progressive tutoring", () =>
+  Effect.gen(function* () {
+    const hint = yield* load((svc) => svc.get("hint"))
+    expect(hint).toBeDefined()
+    expect(hint?.mode).toBe("primary")
+    expect(hint?.native).toBe(true)
+    expect(hint?.prompt).toContain("programming tutor")
+    expect(hint?.prompt).toContain("progressively stronger guidance")
+    expect(hint?.prompt).toContain("language-agnostic pseudocode only")
+    expect(hint?.prompt).toContain("explicitly requests the complete solution")
+    expect(evalPerm(hint, "read")).toBe("allow")
+    expect(evalPerm(hint, "glob")).toBe("allow")
+    expect(evalPerm(hint, "grep")).toBe("allow")
+    expect(evalPerm(hint, "lsp")).toBe("allow")
+    expect(evalPerm(hint, "edit")).toBe("deny")
+    expect(evalPerm(hint, "bash")).toBe("deny")
+    expect(evalPerm(hint, "custom_tool")).toBe("deny")
+    expect(Permission.evaluate("task", "general", hint!.permission).action).toBe("deny")
+    expect(Permission.evaluate("external_directory", "/outside-workspace", hint!.permission).action).toBe("deny")
   }),
 )
 
@@ -749,6 +772,7 @@ it.instance(
       agent: {
         build: { disable: true },
         plan: { disable: true },
+        hint: { disable: true },
       },
     },
   },
