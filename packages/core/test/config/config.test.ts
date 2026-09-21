@@ -278,6 +278,7 @@ describe("Config", () => {
                 shell: "/bin/bash",
                 model: "anthropic/claude",
                 default_agent: "reviewer",
+                learning_mode: true,
                 autoupdate: "notify",
                 share: "disabled",
                 enterprise: { url: "https://share.example.com" },
@@ -364,6 +365,7 @@ describe("Config", () => {
             expect(documents[0]?.info.shell).toBe("/bin/bash")
             expect(documents[0]?.info.model).toBe("anthropic/claude")
             expect(documents[0]?.info.default_agent).toBe("reviewer")
+            expect(documents[0]?.info.learning_mode).toBe(true)
             expect(documents[0]?.info.autoupdate).toBe("notify")
             expect(documents[0]?.info.share).toBe("disabled")
             expect(documents[0]?.info.enterprise).toEqual({ url: "https://share.example.com" })
@@ -501,6 +503,7 @@ describe("Config", () => {
               JSON.stringify({
                 shell: "/bin/zsh",
                 default_agent: "reviewer",
+                learning_mode: false,
                 snapshot: false,
                 autoshare: true,
                 permission: {
@@ -581,6 +584,7 @@ describe("Config", () => {
             expect(documents[0]?.info).toBeInstanceOf(Config.Info)
             expect(documents[0]?.info.shell).toBe("/bin/zsh")
             expect(documents[0]?.info.default_agent).toBe("reviewer")
+            expect(documents[0]?.info.learning_mode).toBe(false)
             expect(documents[0]?.info.snapshots).toBe(false)
             expect(documents[0]?.info.share).toBe("auto")
             expect(documents[0]?.info.permissions).toEqual([
