@@ -291,6 +291,7 @@ it.instance("loads config with defaults when no files exist", () =>
   Effect.gen(function* () {
     const config = yield* Config.use.get()
     expect(config.username).toBeDefined()
+    expect(config.learning_mode).toBeUndefined()
   }),
 )
 
@@ -353,6 +354,27 @@ it.instance(
     expect(config.shell).toBe("bash")
   }),
   { config: { shell: "bash" } },
+)
+
+it.instance(
+  "loads enabled learning mode",
+  Effect.gen(function* () {
+    const config = yield* Config.use.get()
+    expect(config.learning_mode).toBe(true)
+  }),
+  { config: { learning_mode: true } },
+)
+
+it.effect("allows project config to disable global learning mode", () =>
+  withConfigTree(
+    {
+      global: { learning_mode: true },
+      project: { learning_mode: false },
+    },
+    Effect.gen(function* () {
+      expect((yield* Config.use.get()).learning_mode).toBe(false)
+    }),
+  ),
 )
 
 it.instance("updates config and preserves empty shell sentinel", () =>
