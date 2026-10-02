@@ -1151,4 +1151,8 @@ export const dict = {
   "workspace.reset.archived.many": "{{count}} setur verða arkiveraðar.",
   "workspace.reset.note": "Hetta nullstillar workspace til at passa til forsettu greinina.",
   "dialog.usageExceeded.dontShowAgain": "Vís ikki aftur",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

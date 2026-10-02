@@ -1168,4 +1168,8 @@ export const dict = {
   "workspace.reset.archived.many": "{{count}} sessies worden gearchiveerd.",
   "workspace.reset.note":
     "Hierdoor wordt de werkruimte opnieuw ingesteld zodat deze overeenkomt met de standaardbranch.",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

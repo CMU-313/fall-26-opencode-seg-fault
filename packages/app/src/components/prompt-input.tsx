@@ -1190,6 +1190,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
   )
 
   const variants = createMemo(() => ["default", ...props.controls.model.selection.variant.list()])
+  const hintLevels = ["none", "subtle", "moderate", "detailed"]
   // Check provider variants directly: `variants` also includes the UI-only default option.
   const showVariantControl = createMemo(() => props.controls.model.selection.variant.list().length > 0)
   const accepting = createMemo(() => {
@@ -1227,6 +1228,7 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
       onAbort: props.onAbort,
       onSubmit: props.onSubmit,
       model: props.controls.model.selection,
+      hintLevel: () => store.hintLevel,
     })
 
   const handleKeyDown = (event: KeyboardEvent) => {
@@ -1781,6 +1783,31 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                         </TooltipKeybind>
                       </div>
                     </Show>
+                    <div data-component="prompt-hint-level-control">
+                      <Select
+                        size="normal"
+                        options={hintLevels}
+                        current={store.hintLevel ?? "none"}
+                        label={(value) => language.t(`prompt.hintLevel.${value}`)}
+                        onSelect={(value) => {
+                          if (value === "none") {
+                            setStore("hintLevel", undefined)
+                            restoreFocus()
+                            return
+                          }
+
+                          if (value === "subtle" || value === "moderate" || value === "detailed") {
+                            setStore("hintLevel", value)
+                          }
+                          restoreFocus()
+                        }}
+                        class="capitalize max-w-[160px] text-text-base"
+                        valueClass="truncate text-13-regular text-text-base"
+                        triggerStyle={control()}
+                        triggerProps={{ "data-action": "prompt-hint-level" }}
+                        variant="ghost"
+                      />
+                    </div>
                   </Show>
                 </Show>
               </div>

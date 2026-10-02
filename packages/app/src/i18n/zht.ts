@@ -1220,4 +1220,8 @@ export const dict = {
   "error.childStore.persistedProjectIconCreateFailed": "建立持續性專案圖示失敗",
   "error.childStore.storeCreateFailed": "建立儲存區失敗",
   "terminal.connectionLost.abnormalClose": "WebSocket 異常關閉：{{code}}",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 } satisfies Partial<Record<Keys, string>>

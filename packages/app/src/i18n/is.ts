@@ -1154,4 +1154,8 @@ export const dict = {
   "workspace.reset.archived.many": "{{count}} setur verða settar í geymslu.",
   "workspace.reset.note": "Þetta mun endurstilla vinnusvæðið til að passa við sjálfgefna útibúið.",
   "dialog.usageExceeded.dontShowAgain": "Ekki sýna aftur",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

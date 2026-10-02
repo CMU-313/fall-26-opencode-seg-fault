@@ -1127,4 +1127,8 @@ export const dict = {
   "workspace.reset.archived.many": "{{count}} ክፍለ-ጊዜዎች በማህደር ይቀመጣሉ።",
   "workspace.reset.note": "ይህ workspaceን ከነባሪው ቅርንጫፍ ጋር እንዲመሳሰል ዳግም ያስጀምረዋል።",
   "dialog.usageExceeded.dontShowAgain": "እንደገና አታሳይ",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

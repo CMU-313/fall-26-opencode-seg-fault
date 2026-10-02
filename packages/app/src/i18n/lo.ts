@@ -1145,4 +1145,8 @@ export const dict = {
   "workspace.reset.archived.many": "ເຊດຊັນ {{count}} ຈະຖືກເກັບໄວ້.",
   "workspace.reset.note": "ນີ້ຈະຣີເຊັດພື້ນທີ່ເຮັດວຽກໃຫ້ກົງກັບສາຂາເລີ່ມຕົ້ນ.",
   "dialog.usageExceeded.dontShowAgain": "ຢ່າສະແດງອີກ",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

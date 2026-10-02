@@ -1159,4 +1159,8 @@ export const dict = {
   "workspace.reset.archived.many": "{{count}} sesiuni vor fi arhivate.",
   "workspace.reset.note": "Aceasta va reseta spațiul de lucru la ramura implicită.",
   "dialog.usageExceeded.dontShowAgain": "Nu mai afișa",
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
 }

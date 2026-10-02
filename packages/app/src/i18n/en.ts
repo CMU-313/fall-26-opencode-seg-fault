@@ -258,6 +258,12 @@ export const dict = {
   "prompt.mode.shell": "Shell",
   "prompt.mode.normal": "Prompt",
   "prompt.mode.shell.exit": "esc to exit",
+
+  "prompt.hintLevel.none": "No hint",
+  "prompt.hintLevel.subtle": "Subtle hint",
+  "prompt.hintLevel.moderate": "Moderate hint",
+  "prompt.hintLevel.detailed": "Detailed hint",
+
   "session.child.promptDisabled": "Subagent sessions cannot be prompted.",
   "session.child.backToParent": "Back to main session.",
 
