@@ -584,6 +584,10 @@ const layer = Layer.effect(
         if (Flag.OPENCODE_DISABLE_PRUNE) {
           result.compaction = { ...result.compaction, prune: false }
         }
+        const learningMode = Flag.OPENCODE_LEARNING_MODE
+        if (learningMode !== undefined) {
+          result.learning_mode = learningMode
+        }
 
         return {
           config: result,

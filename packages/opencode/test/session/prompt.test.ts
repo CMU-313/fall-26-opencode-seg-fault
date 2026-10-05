@@ -580,6 +580,40 @@ withMcpInstructions.instance(
   15_000,
 )
 
+const LEARNING_MODE_MARKER = "Learning mode is enabled."
+
+const requestBodyWithConfig = Effect.fn("test.requestBodyWithConfig")(function* (config: Partial<ConfigV1.Info>) {
+  const { llm } = yield* useServerConfig((url) => ({ ...providerCfg(url), ...config }))
+  const prompt = yield* SessionPrompt.Service
+  const sessions = yield* Session.Service
+  const chat = yield* sessions.create({ title: "Pinned" })
+  yield* user(chat.id, "why does my loop run forever?")
+  yield* llm.text("answer")
+
+  yield* prompt.loop({ sessionID: chat.id })
+  const hits = yield* llm.hits
+  expect(hits).toHaveLength(1)
+  return JSON.stringify(hits[0]?.body)
+})
+
+it.instance("loop tells the model learning mode is enabled", () =>
+  Effect.gen(function* () {
+    expect(yield* requestBodyWithConfig({ learning_mode: true })).toContain(LEARNING_MODE_MARKER)
+  }),
+)
+
+it.instance("loop sends the normal system context when learning mode is disabled", () =>
+  Effect.gen(function* () {
+    expect(yield* requestBodyWithConfig({ learning_mode: false })).not.toContain(LEARNING_MODE_MARKER)
+  }),
+)
+
+it.instance("loop sends the normal system context when learning mode is not configured", () =>
+  Effect.gen(function* () {
+    expect(yield* requestBodyWithConfig({})).not.toContain(LEARNING_MODE_MARKER)
+  }),
+)
+
 it.instance("legacy prompt emits message events without session.next events", () =>
   Effect.gen(function* () {
     const events = yield* EventV2Bridge.Service

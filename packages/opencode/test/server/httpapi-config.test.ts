@@ -64,6 +64,23 @@ describe("config HttpApi", () => {
     }),
   )
 
+  const learningModes = [true, false]
+  learningModes.forEach((enabled) =>
+    it.live(
+      `serves learning_mode ${enabled} from project config`,
+      Effect.gen(function* () {
+        const tmp = yield* tmpdirEffect({ config: { formatter: false, lsp: false, learning_mode: enabled } })
+
+        const response = yield* Effect.promise(() =>
+          Promise.resolve(app().request("/config", { headers: { "x-opencode-directory": tmp.path } })),
+        )
+
+        expect(response.status).toBe(200)
+        expect((yield* Effect.promise(() => response.json())).learning_mode).toBe(enabled)
+      }),
+    ),
+  )
+
   it.live(
     "serves config with active provider model status",
     Effect.gen(function* () {

@@ -69,6 +69,14 @@ export const Flag = {
   get OPENCODE_PERMISSION() {
     return process.env["OPENCODE_PERMISSION"]
   },
+  // Unlike boolean flags that only opt in, learning mode can be forced off as well as on.
+  // Unset or unrecognized values return undefined so the config file decides.
+  get OPENCODE_LEARNING_MODE() {
+    const value = process.env["OPENCODE_LEARNING_MODE"]?.toLowerCase()
+    if (value === "true" || value === "1") return true
+    if (value === "false" || value === "0") return false
+    return undefined
+  },
   get OPENCODE_PLUGIN_META_FILE() {
     return process.env["OPENCODE_PLUGIN_META_FILE"]
   },

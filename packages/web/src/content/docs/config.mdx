@@ -544,6 +544,27 @@ This setting applies across all interfaces: TUI, CLI (`opencode run`), desktop a
 
 ---
 
+### Learning mode
+
+You can turn on learning mode with the `learning_mode` option. When learning mode is on, OpenCode tells the model that you are a student learning programming, so it explains the reasoning and concepts behind its answers. Learning mode is also the on/off switch for OpenCode's progressive hint features.
+
+```json title="opencode.json"
+{
+  "$schema": "https://opencode.ai/config.json",
+  "learning_mode": true
+}
+```
+
+Learning mode is off by default. Set it to `false`, or remove the option, to restore normal behavior. Project config takes precedence over global config, so you can turn learning mode off for a single project when it is on globally.
+
+You can also override the config for a single run with the `OPENCODE_LEARNING_MODE` environment variable. Use `true` or `1` to turn it on and `false` or `0` to turn it off. Any other value is ignored.
+
+```bash
+OPENCODE_LEARNING_MODE=false opencode
+```
+
+---
+
 ### Subagent depth
 
 You can control how deeply subagents can invoke other subagents using the `subagent_depth` option.
