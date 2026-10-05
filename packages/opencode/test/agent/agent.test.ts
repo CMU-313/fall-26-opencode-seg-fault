@@ -97,6 +97,9 @@ it.instance("hint agent provides read-only progressive tutoring", () =>
     expect(hint).toBeDefined()
     expect(hint?.mode).toBe("primary")
     expect(hint?.native).toBe(true)
+    expect(hint?.hidden).not.toBe(true)
+    expect(hint?.description).toContain("progressive hints")
+    expect(hint?.description).toContain("complete code")
     expect(hint?.prompt).toContain("programming tutor")
     expect(hint?.prompt).toContain("progressively stronger guidance")
     expect(hint?.prompt).toContain("language-agnostic pseudocode only")
@@ -111,6 +114,20 @@ it.instance("hint agent provides read-only progressive tutoring", () =>
     expect(Permission.evaluate("task", "general", hint!.permission).action).toBe("deny")
     expect(Permission.evaluate("external_directory", "/outside-workspace", hint!.permission).action).toBe("deny")
   }),
+)
+
+it.instance(
+  "hint agent can be configured as the default agent",
+  () =>
+    Effect.gen(function* () {
+      const agent = yield* load((svc) => svc.defaultInfo())
+      expect(agent.name).toBe("hint")
+    }),
+  {
+    config: {
+      default_agent: "hint",
+    },
+  },
 )
 
 it.instance(
