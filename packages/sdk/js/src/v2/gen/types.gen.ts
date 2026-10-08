@@ -9807,6 +9807,7 @@ export type SessionPromptData = {
     format?: OutputFormat
     system?: string
     variant?: string
+    hintLevel?: "subtle" | "moderate" | "detailed"
     parts: Array<TextPartInput | FilePartInput | AgentPartInput | SubtaskPartInput>
   }
   path: {
@@ -10154,6 +10155,7 @@ export type SessionPromptAsyncData = {
     format?: OutputFormat
     system?: string
     variant?: string
+    hintLevel?: "subtle" | "moderate" | "detailed"
     parts: Array<TextPartInput | FilePartInput | AgentPartInput | SubtaskPartInput>
   }
   path: {
