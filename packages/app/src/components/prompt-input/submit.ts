@@ -31,6 +31,8 @@ type PendingPrompt = {
 
 const pending = new Map<string, PendingPrompt>()
 
+export type HintLevel = "subtle" | "moderate" | "detailed"
+
 export type FollowupDraft = {
   sessionID: string
   sessionDirectory: string
@@ -39,6 +41,7 @@ export type FollowupDraft = {
   agent: string
   model: { providerID: string; modelID: string }
   variant?: string
+  hintLevel?: HintLevel
 }
 
 type FollowupSendInput = {
@@ -171,6 +174,7 @@ export async function sendFollowupDraft(input: FollowupSendInput) {
       agent: input.draft.agent,
       model: input.draft.model,
       variant: input.draft.variant,
+      hintLevel: input.draft.hintLevel,
       legacyParts: requestParts,
       text: requestParts.flatMap((part) => (part.type === "text" ? [part.text] : [])).join("\n"),
       files: requestParts.flatMap((part) => {
@@ -229,6 +233,7 @@ type PromptSubmitInput = {
   onAbort?: () => void
   onSubmit?: () => void
   model?: ModelSelection
+  hintLevel?: Accessor<HintLevel | undefined>
 }
 
 export function createPromptSubmit(input: PromptSubmitInput) {
@@ -454,6 +459,7 @@ export function createPromptSubmit(input: PromptSubmitInput) {
       agent,
       model,
       variant,
+      hintLevel: input.hintLevel?.(),
     }
 
     const clearInput = () => {

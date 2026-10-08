@@ -87,6 +87,12 @@ function mcpResourceBase64Size(value: string) {
   return Math.max(0, Math.floor((trimmed.length * 3) / 4) - padding)
 }
 
+const HINT_LEVEL_PROMPTS = {
+  subtle: "Give only a subtle hint that points the user in the right direction without explaining the solution.",
+  moderate: "Give a moderate hint that explains the key idea and suggests the next step without providing the complete solution.",
+  detailed: "Give a detailed hint with clear step-by-step guidance toward the solution.",
+} as const
+
 function formatMcpResourceBytes(value: number) {
   if (value < 1024) return `${value} B`
   if (value < 1024 * 1024) return `${Math.ceil(value / 1024)} KB`
@@ -665,7 +671,11 @@ const layer = Layer.effect(
           modelID: model.modelID,
           variant,
         },
-        system: input.system,
+        system: input.hintLevel
+          ? [input.system, HINT_LEVEL_PROMPTS[input.hintLevel]]
+              .filter((value): value is string => value !== undefined)
+              .join("\n")
+          : input.system,
         format: input.format,
       }
 
@@ -1509,6 +1519,13 @@ export const PromptInput = Schema.Struct({
   format: Schema.optional(SessionV1.Format),
   system: Schema.optional(Schema.String),
   variant: Schema.optional(Schema.String),
+  hintLevel: Schema.optional(
+    Schema.Union([
+      Schema.Literal("subtle"),
+      Schema.Literal("moderate"),
+      Schema.Literal("detailed"),
+    ]),
+  ),
   parts: Schema.Array(
     Schema.Union([
       SessionV1.TextPartInput,

@@ -144,6 +144,7 @@ export function Prompt(props: PromptProps) {
   let input: TextareaRenderable
   let anchor: BoxRenderable
   const [inputTarget, setInputTarget] = createSignal<TextareaRenderable | undefined>()
+  const [hintLevel, setHintLevel] = createSignal<"subtle" | "moderate" | "detailed" | undefined>()
 
   const leader = useLeaderActive()
   const local = useLocal()
@@ -513,6 +514,21 @@ export function Prompt(props: PromptProps) {
         },
       },
       {
+        title: "Set hint level",
+        desc: "Choose subtle, moderate, detailed, or none",
+        name: "prompt.hint",
+        category: "Prompt",
+        slashName: "hint",
+        run: () => {
+          input.setText("/hint ")
+          setStore("prompt", {
+            input: "/hint ",
+            parts: [],
+          })
+          input.gotoBufferEnd()
+        },
+      },
+      {
         title: "Skills",
         name: "prompt.skills",
         category: "Prompt",
@@ -573,6 +589,7 @@ export function Prompt(props: PromptProps) {
       "prompt.stash.pop",
       "prompt.stash.list",
       "prompt.skills",
+      "prompt.hint",
       "session.interrupt",
       "workspace.set",
       "session.move",
@@ -1040,21 +1057,49 @@ export function Prompt(props: PromptProps) {
     const currentMode = store.mode
     const editorSelection = editorContext()
     const editorParts =
-      editorSelection && editor.labelState() === "pending"
-        ? [
-            {
-              type: "text" as const,
-              text: formatEditorContext(editorSelection),
-              synthetic: true,
-              metadata: {
-                kind: "editor_context",
-                source: editorSelection.source ?? "editor",
-                filePath: editorSelection.filePath,
-                ranges: editorSelection.ranges,
-              },
+    editorSelection && editor.labelState() === "pending"
+      ? [
+          {
+            type: "text" as const,
+            text: formatEditorContext(editorSelection),
+            synthetic: true,
+            metadata: {
+              kind: "editor_context",
+              source: editorSelection.source ?? "editor",
+              filePath: editorSelection.filePath,
+              ranges: editorSelection.ranges,
             },
-          ]
-        : []
+          },
+        ]
+      : []
+
+  const hint = inputText.trim().match(/^\/hint(?:\s+(\S+))?$/)
+
+  if (hint) {
+    const level = hint[1]?.toLowerCase()
+
+    if (level === "none") {
+      setHintLevel(undefined)
+    } else if (level === "subtle" || level === "moderate" || level === "detailed") {
+      setHintLevel(level)
+    } else {
+      toast.show({
+        message: "Usage: /hint subtle | moderate | detailed | none",
+        variant: "error",
+      })
+      return
+    }
+
+    toast.show({
+      message: level === "none" ? "Hint level disabled" : `Hint level: ${level}`,
+      variant: "info",
+    })
+
+    input.setText("")
+    return
+  }
+
+
 
     if (store.mode === "shell") {
       move.startSubmit()
@@ -1099,6 +1144,7 @@ export function Prompt(props: PromptProps) {
             agent: agent.name,
             model: selectedModel,
             variant,
+            hintLevel: hintLevel(),
             parts: [
               ...editorParts,
               {
