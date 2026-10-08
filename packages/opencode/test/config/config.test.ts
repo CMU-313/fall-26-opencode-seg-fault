@@ -291,6 +291,7 @@ it.instance("loads config with defaults when no files exist", () =>
   Effect.gen(function* () {
     const config = yield* Config.use.get()
     expect(config.username).toBeDefined()
+    expect(config.learning_mode).toBeUndefined()
   }),
 )
 
@@ -354,6 +355,57 @@ it.instance(
   }),
   { config: { shell: "bash" } },
 )
+
+it.instance(
+  "loads enabled learning mode",
+  Effect.gen(function* () {
+    const config = yield* Config.use.get()
+    expect(config.learning_mode).toBe(true)
+  }),
+  { config: { learning_mode: true } },
+)
+
+it.effect("allows project config to disable global learning mode", () =>
+  withConfigTree(
+    {
+      global: { learning_mode: true },
+      project: { learning_mode: false },
+    },
+    Effect.gen(function* () {
+      expect((yield* Config.use.get()).learning_mode).toBe(false)
+    }),
+  ),
+)
+
+describe("OPENCODE_LEARNING_MODE env var", () => {
+  const cases = [
+    { env: "true", config: false, expected: true },
+    { env: "1", config: undefined, expected: true },
+    { env: "TRUE", config: undefined, expected: true },
+    { env: "false", config: true, expected: false },
+    { env: "0", config: true, expected: false },
+    { env: "FALSE", config: true, expected: false },
+    { env: "yes", config: true, expected: true },
+    { env: "", config: false, expected: false },
+    { env: undefined, config: true, expected: true },
+    { env: undefined, config: undefined, expected: undefined },
+  ]
+
+  cases.forEach((input) =>
+    it.instance(
+      `resolves learning_mode to ${input.expected} when env is ${JSON.stringify(input.env)} and config is ${input.config}`,
+      () =>
+        withProcessEnv(
+          "OPENCODE_LEARNING_MODE",
+          input.env,
+          Effect.gen(function* () {
+            expect((yield* Config.use.get()).learning_mode).toBe(input.expected)
+          }),
+        ),
+      { config: input.config === undefined ? {} : { learning_mode: input.config } },
+    ),
+  )
+})
 
 it.instance("updates config and preserves empty shell sentinel", () =>
   Effect.gen(function* () {
