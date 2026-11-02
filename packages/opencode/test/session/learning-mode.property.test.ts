@@ -298,10 +298,10 @@ test("R5: restart applies a toggle and toggling back preserves session history",
   )
 }, 180_000)
 
-// R7: A non-empty unrecognized OPENCODE_LEARNING_MODE logs one warning per
-// config load, naming the variable, received value and accepted values, and
-// continues using file configuration. Recognized values and values that are
-// empty after trimming do not warn.
+// R7: An unrecognized OPENCODE_LEARNING_MODE that is not empty after trimming
+// logs one warning per config load, naming the variable, received value and
+// accepted values, and continues using file configuration. Recognized values
+// and values that are empty after trimming do not warn.
 // Kind: invariant
 test("R7: invalid overrides warn once and preserve the configured behavior", async () => {
   const regression = {
