@@ -49,7 +49,7 @@ const override = fc.boolean().chain((enabled) =>
     .map((input) => ({ enabled: input.enabled, value: input.left + input.word + input.right })),
 )
 
-// Near-misses exercise silent fallback, not just arbitrary garbage. The prefixed
+// Near-misses exercise warning and fallback, not just arbitrary garbage. The prefixed
 // family also covers values beyond the named examples without filtering away
 // most generated inputs or accidentally producing a recognized boolean.
 const invalid = fc.oneof(
@@ -300,15 +300,25 @@ test("R5: restart applies a toggle and toggling back preserves session history",
 
 // R7: A non-empty unrecognized OPENCODE_LEARNING_MODE logs one warning per
 // config load, naming the variable, received value and accepted values, and
-// continues using file configuration. Recognized and empty values do not warn.
+// continues using file configuration. Recognized values and values that are
+// empty after trimming do not warn.
 // Kind: invariant
 test("R7: invalid overrides warn once and preserve the configured behavior", async () => {
+  const regression = {
+    model: "test-model" as const,
+    read: false,
+    glob: false,
+    instruction: "Keep the project's naming conventions." as const,
+    turns: [{ question: "Why does my loop stop?", answer: "Check the loop boundary first." as const }],
+  }
   await fc.assert(
     fc.asyncProperty(
       fc.noShrink(scenario),
       invalid,
       fc.option(fc.boolean(), { nil: undefined }),
-      async (input, value, enabled) => {
+      // Empty and whitespace-only values are equivalent under R4; neither warns.
+      fc.constantFrom("", " ", "\t\r\n"),
+      async (input, value, enabled, emptyValue) => {
         await withLearningMode(input, async (fixture) => {
           await config(fixture.file, enabled)
           const server = await fixture.start(value)
@@ -318,11 +328,11 @@ test("R7: invalid overrides warn once and preserve the configured behavior", asy
           const logs = await server.stop()
 
           // Negative controls run in independent processes, including a recognized
-          // override disagreeing with the file and an explicitly empty variable.
-          const valid = await fixture.start(enabled ? "FaLsE" : "TrUe")
+          // padded override disagreeing with the file and a value empty after trimming.
+          const valid = await fixture.start(enabled ? "\tFaLsE " : " TrUe\r\n")
           const recognized = await fixture.send(valid.client(), await session(valid.client()))
           const validLogs = await valid.stop()
-          const empty = await fixture.start("")
+          const empty = await fixture.start(emptyValue)
           const fallback = await fixture.send(empty.client(), await session(empty.client()))
           const emptyLogs = await empty.stop()
 
@@ -343,7 +353,16 @@ test("R7: invalid overrides warn once and preserve the configured behavior", asy
         })
       },
     ),
-    { numRuns: 8 },
+    {
+      numRuns: 8,
+      // Replay the failing yes/unset case, the stated true-config acceptance
+      // criterion, and false config, with all three empty-value controls.
+      examples: [
+        [regression, "yes", undefined, ""],
+        [regression, "yes", true, "\t\r\n"],
+        [regression, "yes", false, " "],
+      ],
+    },
   )
 }, 240_000)
 
