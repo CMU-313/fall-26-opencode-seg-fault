@@ -170,13 +170,21 @@ test("R3: conflicting configs agree with the project-setting oracle", async () =
 }, 180_000)
 
 // R4: Recognized OPENCODE_LEARNING_MODE values (case/whitespace insensitive)
-// override both files for that process only; empty acts like absent. Config files
-// remain byte-for-byte unchanged and the next run returns to the file setting.
+// override both files for that process only; empty after trimming acts like absent.
+// The override is never persisted. Normal initialization may add $schema; after
+// initialization file bytes stay unchanged and the next run uses the file setting.
 // Kind: round-trip
 test("R4: a one-process override returns to unchanged file configuration", async () => {
   // Keep unrelated request context fixed while shrinking the override and schema
-  // presence. Missing $schema is valid input too: the non-writing promise must
-  // not be made to pass by silently excluding files the loader currently rewrites.
+  // presence. Both initialized and schema-less files remain in the input domain:
+  // first-load metadata initialization must never persist the temporary override.
+  const regression = {
+    model: "test-model",
+    read: false,
+    glob: false,
+    instruction: "Preserve existing comments.",
+    turns: [{ question: "Why does my loop stop?", answer: "Check the loop boundary first." }],
+  }
   await fc.assert(
     fc.asyncProperty(fc.noShrink(scenario), override, fc.boolean(), async (input, env, schema) => {
       await withLearningMode(input, async (fixture) => {
@@ -186,6 +194,20 @@ test("R4: a one-process override returns to unchanged file configuration", async
         const forced = await fixture.start(env.value)
         const overridden = await fixture.send(forced.client(), await session(forced.client()))
         await forced.stop()
+        const initialized = await Promise.all([fixture.global, fixture.file].map((file) => Bun.file(file).text()))
+        if (schema) expect(initialized).toEqual(before)
+        for (const [file, setting] of [
+          [fixture.global, env.enabled],
+          [fixture.file, !env.enabled],
+        ] as const) {
+          const saved = await Bun.file(file).json()
+          // Only optional schema metadata may differ after a first load. All
+          // actual settings, including learning_mode, must still match the files.
+          expect(saved).toEqual({
+            learning_mode: setting,
+            ...(saved.$schema === undefined ? {} : { $schema: "https://opencode.ai/config.json" }),
+          })
+        }
         const normal = await fixture.start()
         const restored = await fixture.send(normal.client(), await session(normal.client()))
         await normal.stop()
@@ -196,10 +218,20 @@ test("R4: a one-process override returns to unchanged file configuration", async
         expect(systemText(overridden).includes(PROMPT_LEARNING_MODE)).toBe(env.enabled)
         expect(systemText(restored).includes(PROMPT_LEARNING_MODE)).toBe(!env.enabled)
         expect(systemText(fallback)).toEqual(systemText(restored))
-        expect(await Promise.all([fixture.global, fixture.file].map((file) => Bun.file(file).text()))).toEqual(before)
+        expect(await Promise.all([fixture.global, fixture.file].map((file) => Bun.file(file).text()))).toEqual(
+          initialized,
+        )
       })
     }),
-    { numRuns: 8 },
+    {
+      numRuns: 8,
+      // Always replay the schema-less counterexample and a padded recognized
+      // value, in addition to generated variants and both override directions.
+      examples: [
+        [regression, { enabled: false, value: "false" }, false],
+        [regression, { enabled: true, value: " TRUE " }, true],
+      ],
+    },
   )
 }, 240_000)
 
