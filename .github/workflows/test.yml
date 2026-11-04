@@ -57,6 +57,13 @@ jobs:
             turbo-${{ runner.os }}-${{ hashFiles('turbo.json', '**/package.json') }}-
             turbo-${{ runner.os }}-
 
+      # The package test script uses --only-failures. Run these properties
+      # explicitly too, so the submitted Actions log names each passing test.
+      - name: Run annalin permission properties
+        working-directory: packages/opencode
+        timeout-minutes: 2
+        run: bun test test/permission/annalin.property.test.ts --timeout 30000
+
       - name: Run unit tests
         timeout-minutes: 20
         # Default turbo concurrency (10) oversubscribes ubuntu-latest's 4
