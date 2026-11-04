@@ -26,7 +26,7 @@
 | R7 | C-5 | Switching hint levels must set the active level to the requested one and must not alter the conversation history. | Starting from `subtle` with N messages in the history, entering `/hint detailed` sets the level to `detailed`, then `/hint subtle` sets it to `subtle`. After both commands the message history is identical to the original N messages. | No | Round-trip | Be on a supported setting with a nonempty history. Switch to a different setting and back; assert the initial setting and history are restored. |
 | R8 | C-10 | The system must provide visible confirmation when a user successfully changes their hint level. | Given `subtle` is active, entering `/hint detailed` displays a confirmation identifying `detailed` as the newly active level. | Yes | Invariant | For every successful transition between distinct supported levels, a transient confirmation names the newly active level and does not create a persisted conversation message. |
 
-Properties written or suggested by opencode or another AI tool: <list by requirement ID, or "none">
+Properties written or suggested by opencode or another AI tool: R1, R2, R3, R8
 
 ## Requirement changes
 
