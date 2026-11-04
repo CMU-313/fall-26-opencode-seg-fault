@@ -60,6 +60,7 @@ test("R2: rejected hint levels preserve the active setting", () => {
       expect(result.handled).toBe(true)
       if (!result.handled) return
       expect(result.hintLevel).toBe(active)
+      expect(result.toast?.variant).toBe("error")
     }),
   )
 })
@@ -71,26 +72,30 @@ test("R2: rejected hint levels preserve the active setting", () => {
 test("R3: changing a supported setting's casing preserves its meaning", () => {
   fc.assert(
     fc.property(settingWithCasing, ({ setting, casing }) => {
-      const result = applyHintCommand(`/hint ${mixedCase(setting, casing)}`, undefined)
+      const original = applyHintCommand(`/hint ${setting}`, undefined,)
 
-      expect(result).toEqual({
-        handled: true,
-        clearInput: true,
-        hintLevel: expectedLevel(setting),
-        toast: {
-          message: setting === "none" ? "Hint level disabled" : `Hint level: ${setting}`,
-          variant: "info",
-        },
-      })
+      const transformed = applyHintCommand(`/hint ${mixedCase(setting, casing)}`, undefined,)
+
+      expect(transformed).toEqual(original)
+
+      expect(transformed.handled).toBe(true)
+
+      if (!transformed.handled) return
+
+      expect(transformed.hintLevel).toBe(
+        expectedLevel(setting),
+      )
+      expect(transformed.clearInput).toBe(true)
     }),
   )
 })
 
-// R8: The system must provide visible confirmation when a user successfully
-// changes their hint level.
+// R8: When a user successfully changes their hint level, the
+// command handler must return an informational toast identifying
+// the newly active hint level.
 // Kind: invariant
-// Generator choice: generate every pair of distinct supported settings to cover
-// all possible successful transitions rather than one hard-coded switch.
+// Generator choice: sample active and requested settings,
+// skipping unchanged states to test successful transitions.
 test("R8: successful hint changes always provide confirmation", () => {
   fc.assert(
     fc.property(activeLevel, supportedSetting, (active, setting) => {
