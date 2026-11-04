@@ -50,7 +50,7 @@ const misspelling = supportedSetting
 // Kind: invariant
 // Generator choice: generate identifier-like values outside the supported set,
 // which exercises invalid command arguments without accidentally creating a valid setting.
-test("R1: unsupported hint levels always show the usage error", () => {
+test("R1: unsupported hint levels are rejected with an error listing the supported levels", () => {
   fc.assert(
     fc.property(activeLevel, unsupportedLevel, (active, unsupported) => {
       const result = applyHintCommand(`/hint ${unsupported}`, active)
