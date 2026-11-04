@@ -4,7 +4,6 @@ import { applyHintCommand, type HintLevel, type HintSetting } from "../../../tui
 
 const supportedSettings = ["subtle", "moderate", "detailed", "none"] as const satisfies ReadonlyArray<HintSetting>
 const activeLevels = [undefined, "subtle", "moderate", "detailed"] as const satisfies ReadonlyArray<HintLevel | undefined>
-const usage = "Usage: /hint subtle | moderate | detailed | none"
 
 const supportedSetting = fc.constantFrom(...supportedSettings)
 const activeLevel = fc.constantFrom(...activeLevels)
@@ -27,8 +26,27 @@ function mixedCase(setting: HintSetting, casing: readonly boolean[]) {
     .join("")
 }
 
-// R1: When a user enters an unsupported hint level, the system must reject the
-// selection and display a message indicating that the level is invalid.
+const letter = fc.constantFrom(..."abcdefghijklmnopqrstuvwxyz".split(""))
+const isSupported = (value: string) => supportedSettings.some((s) => s === value.toLowerCase())
+
+const abbreviation = supportedSetting.chain((setting) =>
+  fc.integer({ min: 1, max: setting.length - 1 }).map((n) => setting.slice(0, n)),
+)
+
+const misspelling = supportedSetting
+  .chain((s) =>
+    fc.oneof(
+      fc.integer({ min: 0, max: s.length - 1 }).map((i) => s.slice(0, i) + s.slice(i + 1)),
+      fc.tuple(fc.integer({ min: 0, max: s.length - 1 }), letter).map(([i, c]) => s.slice(0, i) + c + s.slice(i + 1)),
+      fc.integer({ min: 0, max: s.length - 2 }).map((i) => s.slice(0, i) + s[i + 1] + s[i] + s.slice(i + 2)),
+      fc.tuple(fc.integer({ min: 0, max: s.length }), letter).map(([i, c]) => s.slice(0, i) + c + s.slice(i)),
+    ),
+  )
+  .filter((value) => value.length > 0 && !isSupported(value))
+
+// R1: When a user enters a hint level that is not one of subtle, moderate,
+// detailed, or none, the system must reject the selection and return an error
+// toast that lists the supported hint levels.
 // Kind: invariant
 // Generator choice: generate identifier-like values outside the supported set,
 // which exercises invalid command arguments without accidentally creating a valid setting.
@@ -37,12 +55,16 @@ test("R1: unsupported hint levels always show the usage error", () => {
     fc.property(activeLevel, unsupportedLevel, (active, unsupported) => {
       const result = applyHintCommand(`/hint ${unsupported}`, active)
 
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         handled: true,
         clearInput: false,
         hintLevel: active,
-        toast: { message: usage, variant: "error" },
+        toast: { variant: "error" },
       })
+      if (!result.handled) return
+      for (const level of supportedSettings) {
+        expect(result.toast?.message).toContain(level)
+      }
     }),
   )
 })
@@ -86,6 +108,26 @@ test("R3: changing a supported setting's casing preserves its meaning", () => {
         expectedLevel(setting),
       )
       expect(transformed.clearInput).toBe(true)
+    }),
+  )
+})
+
+// R5: Misspelled hint levels and abbreviations must not be applied as a hint level.
+// Kind: invariant
+// Generator choice: derive near-misses from the supported levels (prefixes and one-edit
+// typos) instead of random strings, since random strings almost never land close to a
+// valid name. Filtering out anything that happens to equal a valid level keeps every
+// generated input genuinely invalid.
+test("R5: misspellings and abbreviations are rejected and the active setting is preserved", () => {
+  fc.assert(
+    fc.property(activeLevel, fc.oneof(abbreviation, misspelling), (active, input) => {
+      const result = applyHintCommand(`/hint ${input}`, active)
+
+      expect(result.handled).toBe(true)
+      if (!result.handled) return
+      expect(result.hintLevel).toBe(active)
+      expect(result.clearInput).toBe(false)
+      expect(result.toast?.variant).toBe("error")
     }),
   )
 })
