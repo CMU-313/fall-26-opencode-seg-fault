@@ -5,7 +5,17 @@ export type HintLevel = Exclude<HintSetting, "none">
 
 export const hintUsage = "Usage: /hint subtle | moderate | detailed | none"
 
-export function applyHintCommand(input: string, active: HintLevel | undefined) {
+export function applyHintCommand(
+  input: string,
+  active: HintLevel | undefined,
+):
+  | { handled: false }
+  | {
+      handled: true
+      clearInput: boolean
+      hintLevel: HintLevel | undefined
+      toast: { message: string; variant: "error" | "info" }
+    } {
   const match = input.trim().match(/^\/hint(?:\s+(\S+))?$/)
   if (!match) return { handled: false } as const
 
@@ -19,7 +29,7 @@ export function applyHintCommand(input: string, active: HintLevel | undefined) {
     }
   }
 
-  if (setting === "subtle" || setting === "moderate" || setting === "detailed") {
+  if (isHintLevel(setting)) {
     return {
       handled: true,
       clearInput: true,
@@ -34,4 +44,8 @@ export function applyHintCommand(input: string, active: HintLevel | undefined) {
     hintLevel: active,
     toast: { message: hintUsage, variant: "error" as const },
   }
+}
+
+function isHintLevel(setting: string | undefined): setting is HintLevel {
+  return setting === "subtle" || setting === "moderate" || setting === "detailed"
 }
