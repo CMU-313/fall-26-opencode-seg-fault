@@ -57,6 +57,7 @@ import { usePromptWorkspace } from "./workspace"
 import { usePromptMove } from "./move"
 import { readLocalAttachment } from "./local-attachment"
 import { useLocation } from "../../context/location"
+import { applyHintCommand, type HintLevel } from "../../prompt/hint"
 
 registerOpencodeSpinner()
 
@@ -144,7 +145,7 @@ export function Prompt(props: PromptProps) {
   let input: TextareaRenderable
   let anchor: BoxRenderable
   const [inputTarget, setInputTarget] = createSignal<TextareaRenderable | undefined>()
-  const [hintLevel, setHintLevel] = createSignal<"subtle" | "moderate" | "detailed" | undefined>()
+  const [hintLevel, setHintLevel] = createSignal<HintLevel>()
 
   const leader = useLeaderActive()
   const local = useLocal()
@@ -1073,31 +1074,13 @@ export function Prompt(props: PromptProps) {
         ]
       : []
 
-  const hint = inputText.trim().match(/^\/hint(?:\s+(\S+))?$/)
-
-  if (hint) {
-    const level = hint[1]?.toLowerCase()
-
-    if (level === "none") {
-      setHintLevel(undefined)
-    } else if (level === "subtle" || level === "moderate" || level === "detailed") {
-      setHintLevel(level)
-    } else {
-      toast.show({
-        message: "Usage: /hint subtle | moderate | detailed | none",
-        variant: "error",
-      })
+    const hint = applyHintCommand(inputText, hintLevel())
+    if (hint.handled) {
+      setHintLevel(hint.hintLevel)
+      toast.show(hint.toast)
+      if (hint.clearInput) input.setText("")
       return
     }
-
-    toast.show({
-      message: level === "none" ? "Hint level disabled" : `Hint level: ${level}`,
-      variant: "info",
-    })
-
-    input.setText("")
-    return
-  }
 
 
 
