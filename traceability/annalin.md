@@ -50,3 +50,15 @@ The local runtime was Bun 1.4.2; the repository's CI pins Bun 1.3.14. No passing
 `opencode#test` is already included in `turbo.json`. The package test script uses `--only-failures`, so the test workflow also runs this property file explicitly in **Run annalin permission properties**, making the four passing test names visible in the Actions log.
 
 The individual branch is `annalin-properties`, based on `main` including the team's fast-check dependency and 20-minute unit-test step. The PR must target `main` and stay open for the next project. A teammate review, a passing PR test run, and final-commit permalinks are still required before submission.
+
+## Hand-written mutants
+
+These predictions were prepared with Codex assistance before running the mutants.
+
+| ID | Requirement targeted | Planned change | Predicted killer | Actual result |
+|---|---|---|---|---|
+| H1 | R1: effective denial blocks execution | In `Permission.ask`, mistakenly treat a matched deny rule like allow and continue processing instead of returning `DeniedError`. | R1 should kill it: the denied request would reach the execution continuation instead of failing. | Not run yet |
+| H2 | R2: ask waits for approval | Publish the approval request, but return immediately instead of waiting for the user's reply. | R2 should kill it: the operation would finish and the execution continuation could run before approval. | Not run yet |
+| H3 | R2: rejection prevents execution | In the reject-reply branch, complete the pending request successfully instead of failing it with `RejectedError`. | R2 should kill it: a rejected request would succeed and reach the execution continuation. | Not run yet |
+| H4 | R3: restoring a setting restores behavior | In `fromConfig`, incorrectly convert an explicit nested `allow` action to `ask`. | R3 should kill it: restoring an allow setting would produce ask instead of allow. | Not run yet |
+| H5 | R4: changing a deletion target preserves denial | In wildcard matching, make `*` match only characters within one path segment instead of allowing `/`. | R4 should kill it: a broad `rm *` deny pattern would stop covering nested paths and folder commands consistently. R1 may also kill it. | Not run yet |
