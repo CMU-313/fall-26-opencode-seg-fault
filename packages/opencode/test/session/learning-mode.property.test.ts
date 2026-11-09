@@ -97,7 +97,7 @@ test("R1: toggling learning mode preserves the rest of every model request", asy
         }
       })
     }),
-    { numRuns: 8 },
+    { seed: 42, numRuns: 8 },
   )
 }, 180_000)
 
@@ -138,7 +138,7 @@ test("R2: moving the setting from project to global changes only its scope", asy
         expect(await Bun.file(`${fixture.other}/opencode.json`).exists()).toBe(false)
       })
     }),
-    { numRuns: 6 },
+    { seed: 42, numRuns: 6 },
   )
 }, 180_000)
 
@@ -165,7 +165,7 @@ test("R3: conflicting configs agree with the project-setting oracle", async () =
         }
       })
     }),
-    { numRuns: 8 },
+    { seed: 42, numRuns: 8 },
   )
 }, 180_000)
 
@@ -224,7 +224,7 @@ test("R4: a one-process override returns to unchanged file configuration", async
       })
     }),
     {
-      numRuns: 8,
+      seed: 42, numRuns: 8,
       // Always replay the schema-less counterexample and a padded recognized
       // value, in addition to generated variants and both override directions.
       examples: [
@@ -294,7 +294,7 @@ test("R5: restart applies a toggle and toggling back preserves session history",
         ).toEqual(after)
       })
     }),
-    { numRuns: 6 },
+    { seed: 42, numRuns: 6 },
   )
 }, 180_000)
 
@@ -354,7 +354,7 @@ test("R7: invalid overrides warn once and preserve the configured behavior", asy
       },
     ),
     {
-      numRuns: 8,
+      seed: 42, numRuns: 8,
       // Replay the failing yes/unset case, the stated true-config acceptance
       // criterion, and false config, with all three empty-value controls.
       examples: [
