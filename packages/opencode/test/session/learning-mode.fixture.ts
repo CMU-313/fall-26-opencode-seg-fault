@@ -106,6 +106,10 @@ async function setup(fixture: Parameters<Parameters<typeof withCliFixture>[0]>[0
           OPENCODE_MODELS_PATH: process.env.OPENCODE_MODELS_PATH,
           OPENCODE_AUTH_CONTENT: "{}",
           ...(value === undefined ? {} : { OPENCODE_LEARNING_MODE: value }),
+                    // Mutation testing: Stryker picks the active mutant through this variable.
+          ...(process.env.__STRYKER_ACTIVE_MUTANT__ === undefined
+            ? {}
+            : { __STRYKER_ACTIVE_MUTANT__: process.env.__STRYKER_ACTIVE_MUTANT__ }),
           OPENCODE_CONFIG_CONTENT: JSON.stringify({
             ...provider,
             snapshot: false,
