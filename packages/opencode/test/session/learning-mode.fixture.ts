@@ -12,6 +12,8 @@ export type Scenario = {
   glob: boolean
   instruction: string
   turns: { question: string; answer: string }[]
+  // Instructions sent by one local MCP server; undefined means no MCP server.
+  mcp?: string
 }
 
 type Client = ReturnType<typeof createOpencodeClient>
@@ -106,7 +108,7 @@ async function setup(fixture: Parameters<Parameters<typeof withCliFixture>[0]>[0
           OPENCODE_MODELS_PATH: process.env.OPENCODE_MODELS_PATH,
           OPENCODE_AUTH_CONTENT: "{}",
           ...(value === undefined ? {} : { OPENCODE_LEARNING_MODE: value }),
-                    // Mutation testing: Stryker picks the active mutant through this variable.
+          // Mutation testing: Stryker picks the active mutant through this variable.
           ...(process.env.__STRYKER_ACTIVE_MUTANT__ === undefined
             ? {}
             : { __STRYKER_ACTIVE_MUTANT__: process.env.__STRYKER_ACTIVE_MUTANT__ }),
@@ -116,6 +118,20 @@ async function setup(fixture: Parameters<Parameters<typeof withCliFixture>[0]>[0
             share: "disabled",
             model: `test/${scenario.model}`,
             tools: { read: scenario.read, glob: scenario.glob },
+            ...(scenario.mcp === undefined
+              ? {}
+              : {
+                  mcp: {
+                    guide: {
+                      type: "local",
+                      command: [
+                        process.execPath,
+                        path.resolve(import.meta.dir, "learning-mode.mcp-server.ts"),
+                        scenario.mcp,
+                      ],
+                    },
+                  },
+                }),
             provider: {
               test: {
                 ...provider.provider.test,

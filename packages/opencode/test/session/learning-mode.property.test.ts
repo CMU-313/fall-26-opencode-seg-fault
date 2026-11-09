@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test"
 import fc from "fast-check"
+import { Flag } from "@opencode-ai/core/flag/flag"
 import PROMPT_LEARNING_MODE from "../../src/session/prompt/learning-mode.txt"
 import { config, requestMessages, session, systemText, withLearningMode } from "./learning-mode.fixture"
 
@@ -59,13 +60,25 @@ const invalid = fc.oneof(
     .map((chars) => `invalid:${chars.join("")}`),
 )
 
+// MCP servers add their own block of system instructions. R1 draws cases with and
+// without one, so it also checks that learning mode keeps that block.
+const mcp = fc.option(
+  fc.constantFrom(
+    "Call search before editing files.",
+    "Prefer read-only tools.\nAsk before deleting anything.",
+    "先读文件，再修改。",
+  ),
+  { nil: undefined },
+)
+
 // R1: Enabling or disabling learning mode must preserve the selected model,
 // tool definitions, user messages, conversation history and all other system
 // instructions; only the learning-mode instructions may be added or removed.
 // Kind: invariant
 test("R1: toggling learning mode preserves the rest of every model request", async () => {
   await fc.assert(
-    fc.asyncProperty(scenario, async (input) => {
+    fc.asyncProperty(scenario, mcp, async (base, guide) => {
+      const input = { ...base, mcp: guide }
       await withLearningMode(input, async (fixture) => {
         const server = await fixture.start()
         const client = server.client()
@@ -82,6 +95,12 @@ test("R1: toggling learning mode preserves the rest of every model request", asy
           expect(systemText(baseline[index])).not.toContain(PROMPT_LEARNING_MODE)
           expect(systemText(request).split(PROMPT_LEARNING_MODE)).toHaveLength(2)
           expect(systemText(request)).toContain(input.instruction)
+          // Guard against a vacuous pass: when an MCP server is configured, its
+          // instructions must really be in both requests.
+          for (const line of input.mcp?.split("\n") ?? []) {
+            expect(systemText(baseline[index])).toContain(line)
+            expect(systemText(request)).toContain(line)
+          }
           expect(request.tools).toEqual(baseline[index].tools)
           expect(Array.isArray(request.tools) && request.tools.length > 0).toBe(true)
           // Remove exactly the injected block and its joining newline. Do not
@@ -234,6 +253,34 @@ test("R4: a one-process override returns to unchanged file configuration", async
     },
   )
 }, 240_000)
+
+// R4 (parser): Every recognized spelling of OPENCODE_LEARNING_MODE parses to the
+// truth value it was built from; invalid and blank values parse to "no override".
+// It reads the flag in-process, so it can afford 200 cases and reaches every
+// numeric alias, which the 8 server-level R4 cases above can miss.
+// Kind: model/oracle
+test("R4: every override spelling parses to the value it was built from", () => {
+  const previous = process.env.OPENCODE_LEARNING_MODE
+  try {
+    fc.assert(
+      fc.property(
+        fc.oneof(
+          { arbitrary: override, weight: 4 },
+          { arbitrary: invalid.map((value) => ({ enabled: undefined, value })), weight: 1 },
+          { arbitrary: fc.constantFrom("", " ", "\t\r\n").map((value) => ({ enabled: undefined, value })), weight: 1 },
+        ),
+        (input) => {
+          process.env.OPENCODE_LEARNING_MODE = input.value
+          expect(Flag.OPENCODE_LEARNING_MODE).toBe(input.enabled)
+        },
+      ),
+      { seed: 42, numRuns: 200 },
+    )
+  } finally {
+    if (previous === undefined) delete process.env.OPENCODE_LEARNING_MODE
+    else process.env.OPENCODE_LEARNING_MODE = previous
+  }
+})
 
 // R5: Config-file changes take effect at the next config load; until then the
 // running instance retains its setting. Previous messages and replies never
