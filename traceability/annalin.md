@@ -57,8 +57,18 @@ These predictions were prepared with Codex assistance before running the mutants
 
 | ID | Requirement targeted | Planned change | Predicted killer | Actual result |
 |---|---|---|---|---|
-| H1 | R1: effective denial blocks execution | In `Permission.ask`, mistakenly treat a matched deny rule like allow and continue processing instead of returning `DeniedError`. | R1 should kill it: the denied request would reach the execution continuation instead of failing. | Not run yet |
+| H1 | R1: effective denial blocks execution | In `Permission.ask`, mistakenly treat a matched deny rule like allow and continue processing instead of returning `DeniedError`. | R1 should kill it: the denied request would reach the execution continuation instead of failing. | Killed by R1: 1 failed, 3 passed. Shrunk counterexample `["a", "allow", 0, 0]`. |
 | H2 | R2: ask waits for approval | Publish the approval request, but return immediately instead of waiting for the user's reply. | R2 should kill it: the operation would finish and the execution continuation could run before approval. | Not run yet |
 | H3 | R2: rejection prevents execution | In the reject-reply branch, complete the pending request successfully instead of failing it with `RejectedError`. | R2 should kill it: a rejected request would succeed and reach the execution continuation. | Not run yet |
 | H4 | R3: restoring a setting restores behavior | In `fromConfig`, incorrectly convert an explicit nested `allow` action to `ask`. | R3 should kill it: restoring an allow setting would produce ask instead of allow. | Not run yet |
 | H5 | R4: changing a deletion target preserves denial | In wildcard matching, make `*` match only characters within one path segment instead of allowing `/`. | R4 should kill it: a broad `rm *` deny pattern would stop covering nested paths and folder commands consistently. R1 may also kill it. | Not run yet |
+
+### H1 evidence
+
+Applied and tested H1 after the predictions were committed in `79a817f`. The unmodified property file passed all four tests before mutation. With H1 applied, R1 failed because the denied `rm a` request completed successfully instead of failing; R2–R4 passed. The observed fast-check seed was `-1995325114`, with shrink path `0:0:0:0:0`.
+
+- Patch: [H1.patch](../mutants/annalin/H1.patch)
+- Original-code run: [H1-baseline.log](../mutants/annalin/H1-baseline.log)
+- Mutant run: [H1-mutant.log](../mutants/annalin/H1-mutant.log)
+
+The correct permission source was restored after this experiment. H1 is a deliberate test fault, not a production fix.
