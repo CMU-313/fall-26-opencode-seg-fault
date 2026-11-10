@@ -18,7 +18,7 @@ const env = AppNodeBuilder.build(
   [[InstanceStore.bootstrapNode, noopBootstrap]],
 )
 const it = testEffect(env)
-const runs = { numRuns: 100 }
+const runs = { numRuns: 100, seed: 42 }
 
 // Mix explicit boundaries with generated paths: nested files/folders, spaces,
 // Windows separators, Unicode, long names, and regex metacharacters. These are

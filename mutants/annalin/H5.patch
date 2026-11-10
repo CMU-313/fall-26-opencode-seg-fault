@@ -1,0 +1,13 @@
+diff --git a/packages/core/src/util/wildcard.ts b/packages/core/src/util/wildcard.ts
+index 0a67817..b369252 100644
+--- a/packages/core/src/util/wildcard.ts
++++ b/packages/core/src/util/wildcard.ts
+@@ -5,7 +5,7 @@ export function match(input: string, pattern: string) {
+   let escaped = pattern
+     .replaceAll("\\", "/")
+     .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+-    .replace(/\*/g, ".*")
++    .replace(/\*/g, "[^/]*")
+     .replace(/\?/g, ".")
+ 
+   if (escaped.endsWith(" .*")) escaped = escaped.slice(0, -3) + "( .*)?"

@@ -1,0 +1,491 @@
+[32m17:51:59 (44066) INFO ProjectReader[39m Found 2 of 6005 file(s) to be mutated.
+Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[32m17:51:59 (44066) INFO Instrumenter[39m Instrumented 2 source file(s) with 119 mutant(s)
+[32m17:52:01 (44066) INFO ConcurrencyTokenProvider[39m Creating 1 test runner process(es).
+[32m17:52:01 (44066) INFO Sandbox[39m In place mode is enabled, Stryker will be overriding YOUR files. Find your backup at: .stryker-tmp/backup-WHTllV
+[32m17:52:01 (44066) INFO BroadcastReporter[39m Detected that current console does not support the "progress" reporter, downgrading to "progress-append-only" reporter
+[32m17:52:01 (44066) INFO DryRunExecutor[39m Starting initial test run (command test runner with "off" coverage analysis). This may take a while.
+[32m17:52:06 (44066) INFO DryRunExecutor[39m Initial test run succeeded. Ran 1 tests in 4 seconds (net 4542 ms, overhead 1 ms).
+Mutation testing 1% (elapsed: <1m, remaining: ~9m) 2/119 tested (0 survived, 0 timed out)
+Mutation testing 4% (elapsed: <1m, remaining: ~7m) 5/119 tested (0 survived, 0 timed out)
+Mutation testing 5% (elapsed: <1m, remaining: ~8m) 7/119 tested (0 survived, 0 timed out)
+Mutation testing 8% (elapsed: <1m, remaining: ~7m) 10/119 tested (1 survived, 0 timed out)
+Mutation testing 8% (elapsed: <1m, remaining: ~9m) 10/119 tested (1 survived, 0 timed out)
+Mutation testing 8% (elapsed: ~1m, remaining: ~10m) 10/119 tested (1 survived, 0 timed out)
+Mutation testing 9% (elapsed: ~1m, remaining: ~11m) 11/119 tested (1 survived, 0 timed out)
+Mutation testing 9% (elapsed: ~1m, remaining: ~13m) 11/119 tested (1 survived, 0 timed out)
+Mutation testing 10% (elapsed: ~1m, remaining: ~12m) 13/119 tested (1 survived, 0 timed out)
+Mutation testing 10% (elapsed: ~1m, remaining: ~13m) 13/119 tested (1 survived, 0 timed out)
+Mutation testing 11% (elapsed: ~1m, remaining: ~13m) 14/119 tested (1 survived, 0 timed out)
+Mutation testing 12% (elapsed: ~2m, remaining: ~13m) 15/119 tested (1 survived, 0 timed out)
+Mutation testing 12% (elapsed: ~2m, remaining: ~15m) 15/119 tested (1 survived, 0 timed out)
+Mutation testing 14% (elapsed: ~2m, remaining: ~14m) 17/119 tested (2 survived, 0 timed out)
+Mutation testing 15% (elapsed: ~2m, remaining: ~13m) 19/119 tested (4 survived, 0 timed out)
+Mutation testing 18% (elapsed: ~2m, remaining: ~11m) 22/119 tested (7 survived, 0 timed out)
+Mutation testing 20% (elapsed: ~2m, remaining: ~11m) 24/119 tested (9 survived, 0 timed out)
+Mutation testing 20% (elapsed: ~3m, remaining: ~11m) 24/119 tested (9 survived, 0 timed out)
+Mutation testing 21% (elapsed: ~3m, remaining: ~11m) 25/119 tested (9 survived, 0 timed out)
+Mutation testing 22% (elapsed: ~3m, remaining: ~11m) 27/119 tested (9 survived, 0 timed out)
+Mutation testing 25% (elapsed: ~3m, remaining: ~10m) 30/119 tested (9 survived, 0 timed out)
+Mutation testing 27% (elapsed: ~3m, remaining: ~9m) 33/119 tested (12 survived, 0 timed out)
+Mutation testing 28% (elapsed: ~3m, remaining: ~9m) 34/119 tested (13 survived, 0 timed out)
+Mutation testing 28% (elapsed: ~4m, remaining: ~10m) 34/119 tested (13 survived, 0 timed out)
+Mutation testing 29% (elapsed: ~4m, remaining: ~10m) 35/119 tested (13 survived, 0 timed out)
+Mutation testing 30% (elapsed: ~4m, remaining: ~9m) 36/119 tested (14 survived, 0 timed out)
+Mutation testing 30% (elapsed: ~4m, remaining: ~10m) 36/119 tested (14 survived, 0 timed out)
+Mutation testing 31% (elapsed: ~4m, remaining: ~9m) 38/119 tested (15 survived, 0 timed out)
+Mutation testing 32% (elapsed: ~4m, remaining: ~9m) 39/119 tested (16 survived, 0 timed out)
+Mutation testing 32% (elapsed: ~5m, remaining: ~10m) 39/119 tested (16 survived, 0 timed out)
+Mutation testing 33% (elapsed: ~5m, remaining: ~10m) 40/119 tested (16 survived, 0 timed out)
+Mutation testing 33% (elapsed: ~5m, remaining: ~10m) 40/119 tested (16 survived, 0 timed out)
+Mutation testing 33% (elapsed: ~5m, remaining: ~10m) 40/119 tested (16 survived, 0 timed out)
+Mutation testing 34% (elapsed: ~5m, remaining: ~10m) 41/119 tested (16 survived, 0 timed out)
+Mutation testing 34% (elapsed: ~5m, remaining: ~11m) 41/119 tested (16 survived, 0 timed out)
+Mutation testing 34% (elapsed: ~6m, remaining: ~11m) 41/119 tested (16 survived, 0 timed out)
+Mutation testing 34% (elapsed: ~6m, remaining: ~11m) 41/119 tested (16 survived, 0 timed out)
+Mutation testing 35% (elapsed: ~6m, remaining: ~11m) 42/119 tested (16 survived, 1 timed out)
+Mutation testing 35% (elapsed: ~6m, remaining: ~11m) 42/119 tested (16 survived, 1 timed out)
+Mutation testing 35% (elapsed: ~6m, remaining: ~12m) 42/119 tested (16 survived, 1 timed out)
+Mutation testing 36% (elapsed: ~6m, remaining: ~12m) 43/119 tested (16 survived, 1 timed out)
+Mutation testing 36% (elapsed: ~7m, remaining: ~12m) 43/119 tested (16 survived, 1 timed out)
+Mutation testing 36% (elapsed: ~7m, remaining: ~12m) 43/119 tested (16 survived, 1 timed out)
+Mutation testing 36% (elapsed: ~7m, remaining: ~12m) 43/119 tested (16 survived, 1 timed out)
+Mutation testing 37% (elapsed: ~7m, remaining: ~12m) 45/119 tested (16 survived, 1 timed out)
+Mutation testing 39% (elapsed: ~7m, remaining: ~11m) 47/119 tested (18 survived, 1 timed out)
+Mutation testing 39% (elapsed: ~7m, remaining: ~12m) 47/119 tested (18 survived, 1 timed out)
+Mutation testing 41% (elapsed: ~8m, remaining: ~11m) 49/119 tested (19 survived, 1 timed out)
+Mutation testing 41% (elapsed: ~8m, remaining: ~11m) 49/119 tested (19 survived, 1 timed out)
+Mutation testing 41% (elapsed: ~8m, remaining: ~11m) 49/119 tested (19 survived, 1 timed out)
+Mutation testing 42% (elapsed: ~8m, remaining: ~11m) 51/119 tested (20 survived, 1 timed out)
+Mutation testing 42% (elapsed: ~8m, remaining: ~11m) 51/119 tested (20 survived, 1 timed out)
+Mutation testing 43% (elapsed: ~8m, remaining: ~11m) 52/119 tested (20 survived, 1 timed out)
+Mutation testing 43% (elapsed: ~9m, remaining: ~11m) 52/119 tested (20 survived, 1 timed out)
+Mutation testing 44% (elapsed: ~9m, remaining: ~11m) 53/119 tested (20 survived, 1 timed out)
+Mutation testing 44% (elapsed: ~9m, remaining: ~11m) 53/119 tested (20 survived, 1 timed out)
+Mutation testing 44% (elapsed: ~9m, remaining: ~11m) 53/119 tested (20 survived, 1 timed out)
+Mutation testing 46% (elapsed: ~9m, remaining: ~11m) 55/119 tested (21 survived, 1 timed out)
+Mutation testing 48% (elapsed: ~9m, remaining: ~10m) 58/119 tested (23 survived, 1 timed out)
+Mutation testing 49% (elapsed: ~10m, remaining: ~10m) 59/119 tested (24 survived, 1 timed out)
+Mutation testing 49% (elapsed: ~10m, remaining: ~10m) 59/119 tested (24 survived, 1 timed out)
+Mutation testing 51% (elapsed: ~10m, remaining: ~9m) 61/119 tested (25 survived, 1 timed out)
+Mutation testing 52% (elapsed: ~10m, remaining: ~9m) 63/119 tested (27 survived, 1 timed out)
+Mutation testing 52% (elapsed: ~10m, remaining: ~9m) 63/119 tested (27 survived, 1 timed out)
+Mutation testing 52% (elapsed: ~10m, remaining: ~9m) 63/119 tested (27 survived, 1 timed out)
+Mutation testing 53% (elapsed: ~11m, remaining: ~9m) 64/119 tested (27 survived, 1 timed out)
+Mutation testing 56% (elapsed: ~11m, remaining: ~8m) 67/119 tested (28 survived, 1 timed out)
+Mutation testing 58% (elapsed: ~11m, remaining: ~7m) 70/119 tested (31 survived, 1 timed out)
+Mutation testing 63% (elapsed: ~11m, remaining: ~6m) 75/119 tested (31 survived, 1 timed out)
+Mutation testing 64% (elapsed: ~11m, remaining: ~6m) 77/119 tested (33 survived, 1 timed out)
+Mutation testing 66% (elapsed: ~11m, remaining: ~5m) 79/119 tested (35 survived, 1 timed out)
+Mutation testing 68% (elapsed: ~12m, remaining: ~5m) 82/119 tested (38 survived, 1 timed out)
+Mutation testing 70% (elapsed: ~12m, remaining: ~5m) 84/119 tested (40 survived, 1 timed out)
+Mutation testing 72% (elapsed: ~12m, remaining: ~4m) 86/119 tested (42 survived, 1 timed out)
+Mutation testing 74% (elapsed: ~12m, remaining: ~4m) 89/119 tested (45 survived, 1 timed out)
+Mutation testing 76% (elapsed: ~12m, remaining: ~3m) 91/119 tested (47 survived, 1 timed out)
+Mutation testing 78% (elapsed: ~12m, remaining: ~3m) 93/119 tested (49 survived, 1 timed out)
+Mutation testing 80% (elapsed: ~13m, remaining: ~3m) 96/119 tested (52 survived, 1 timed out)
+Mutation testing 82% (elapsed: ~13m, remaining: ~2m) 98/119 tested (54 survived, 1 timed out)
+Mutation testing 84% (elapsed: ~13m, remaining: ~2m) 101/119 tested (57 survived, 1 timed out)
+Mutation testing 86% (elapsed: ~13m, remaining: ~2m) 103/119 tested (59 survived, 1 timed out)
+Mutation testing 89% (elapsed: ~13m, remaining: ~1m) 106/119 tested (62 survived, 1 timed out)
+Mutation testing 89% (elapsed: ~13m, remaining: ~1m) 107/119 tested (63 survived, 1 timed out)
+Mutation testing 89% (elapsed: ~14m, remaining: ~1m) 107/119 tested (63 survived, 1 timed out)
+Mutation testing 91% (elapsed: ~14m, remaining: ~1m) 109/119 tested (63 survived, 1 timed out)
+Mutation testing 93% (elapsed: ~14m, remaining: ~1m) 111/119 tested (63 survived, 1 timed out)
+Mutation testing 95% (elapsed: ~14m, remaining: <1m) 114/119 tested (63 survived, 1 timed out)
+Mutation testing 97% (elapsed: ~14m, remaining: <1m) 116/119 tested (63 survived, 1 timed out)
+Mutation testing 98% (elapsed: ~14m, remaining: <1m) 117/119 tested (63 survived, 1 timed out)
+Mutation testing 98% (elapsed: ~15m, remaining: <1m) 117/119 tested (63 survived, 1 timed out)
+Mutation testing 99% (elapsed: ~15m, remaining: <1m) 118/119 tested (63 survived, 1 timed out)
+Mutation testing 99% (elapsed: ~15m, remaining: <1m) 118/119 tested (63 survived, 1 timed out)
+
+All tests
+  ✓ All tests (killed 55)
+
+[Survived] StringLiteral
+packages/core/src/util/wildcard.ts:9:21
+-       .replace(/\?/g, ".")
++       .replace(/\?/g, "")
+
+[Survived] StringLiteral
+packages/core/src/util/wildcard.ts:13:21
+-     return new RegExp("^" + escaped + "$", process.platform === "win32" ? "si" : "s").test(normalized)
++     return new RegExp("" + escaped + "$", process.platform === "win32" ? "si" : "s").test(normalized)
+
+[Survived] StringLiteral
+packages/core/src/util/wildcard.ts:13:37
+-     return new RegExp("^" + escaped + "$", process.platform === "win32" ? "si" : "s").test(normalized)
++     return new RegExp("^" + escaped + "", process.platform === "win32" ? "si" : "s").test(normalized)
+
+[Survived] ConditionalExpression
+packages/core/src/util/wildcard.ts:13:42
+-     return new RegExp("^" + escaped + "$", process.platform === "win32" ? "si" : "s").test(normalized)
++     return new RegExp("^" + escaped + "$", true ? "si" : "s").test(normalized)
+
+[Survived] ConditionalExpression
+packages/core/src/util/wildcard.ts:13:42
+-     return new RegExp("^" + escaped + "$", process.platform === "win32" ? "si" : "s").test(normalized)
++     return new RegExp("^" + escaped + "$", false ? "si" : "s").test(normalized)
+
+[Survived] EqualityOperator
+packages/core/src/util/wildcard.ts:13:42
+-     return new RegExp("^" + escaped + "$", process.platform === "win32" ? "si" : "s").test(normalized)
++     return new RegExp("^" + escaped + "$", process.platform !== "win32" ? "si" : "s").test(normalized)
+
+[Survived] StringLiteral
+packages/core/src/util/wildcard.ts:13:63
+-     return new RegExp("^" + escaped + "$", process.platform === "win32" ? "si" : "s").test(normalized)
++     return new RegExp("^" + escaped + "$", process.platform === "" ? "si" : "s").test(normalized)
+
+[Survived] StringLiteral
+packages/core/src/util/wildcard.ts:13:73
+-     return new RegExp("^" + escaped + "$", process.platform === "win32" ? "si" : "s").test(normalized)
++     return new RegExp("^" + escaped + "$", process.platform === "win32" ? "" : "s").test(normalized)
+
+[Survived] StringLiteral
+packages/core/src/util/wildcard.ts:13:80
+-     return new RegExp("^" + escaped + "$", process.platform === "win32" ? "si" : "s").test(normalized)
++     return new RegExp("^" + escaped + "$", process.platform === "win32" ? "si" : "").test(normalized)
+
+[Survived] ObjectLiteral
+packages/opencode/src/permission/index.ts:32:116
+-         .findLast((rule) => Wildcard.match(permission, rule.permission) && Wildcard.match(pattern, rule.pattern)) ?? {
+-         action: "ask",
+-         permission,
+-         pattern: "*",
+-       }
++         .findLast((rule) => Wildcard.match(permission, rule.permission) && Wildcard.match(pattern, rule.pattern)) ?? {}
+
+[Survived] StringLiteral
+packages/opencode/src/permission/index.ts:33:15
+-         action: "ask",
++         action: "",
+
+[Survived] StringLiteral
+packages/opencode/src/permission/index.ts:35:16
+-         pattern: "*",
++         pattern: "",
+
+[Survived] StringLiteral
+packages/opencode/src/permission/index.ts:67:27
+-       const ask = Effect.fn("Permission.ask")(function* (input: PermissionV1.AskInput) {
++       const ask = Effect.fn("")(function* (input: PermissionV1.AskInput) {
+
+[Survived] BooleanLiteral
+packages/opencode/src/permission/index.ts:70:22
+-         let needsAsk = false
++         let needsAsk = true
+
+[Survived] StringLiteral
+packages/opencode/src/permission/index.ts:74:31
+-           yield* Effect.logInfo("evaluated", { permission: request.permission, pattern, action: rule })
++           yield* Effect.logInfo("", { permission: request.permission, pattern, action: rule })
+
+[Survived] ObjectLiteral
+packages/opencode/src/permission/index.ts:74:44
+-           yield* Effect.logInfo("evaluated", { permission: request.permission, pattern, action: rule })
++           yield* Effect.logInfo("evaluated", {})
+
+[Survived] MethodExpression
+packages/opencode/src/permission/index.ts:77:22
+-               ruleset: ruleset.filter((rule) => Wildcard.match(request.permission, rule.permission)),
++               ruleset: ruleset,
+
+[Survived] ArrowFunction
+packages/opencode/src/permission/index.ts:77:37
+-               ruleset: ruleset.filter((rule) => Wildcard.match(request.permission, rule.permission)),
++               ruleset: ruleset.filter(() => undefined),
+
+[Survived] ConditionalExpression
+packages/opencode/src/permission/index.ts:80:13
+-           if (rule.action === "allow") continue
++           if (false) continue
+
+[Survived] StringLiteral
+packages/opencode/src/permission/index.ts:80:29
+-           if (rule.action === "allow") continue
++           if (rule.action === "") continue
+
+[Survived] ConditionalExpression
+packages/opencode/src/permission/index.ts:84:11
+-         if (!needsAsk) return
++         if (false) return
+
+[Survived] LogicalOperator
+packages/opencode/src/permission/index.ts:86:18
+-         const id = request.id ?? PermissionV1.ID.ascending()
++         const id = request.id && PermissionV1.ID.ascending()
+
+[Survived] StringLiteral
+packages/opencode/src/permission/index.ts:96:29
+-         yield* Effect.logInfo("asking", { id, permission: info.permission, patterns: info.patterns })
++         yield* Effect.logInfo("", { id, permission: info.permission, patterns: info.patterns })
+
+[Survived] ObjectLiteral
+packages/opencode/src/permission/index.ts:96:39
+-         yield* Effect.logInfo("asking", { id, permission: info.permission, patterns: info.patterns })
++         yield* Effect.logInfo("asking", {})
+
+[Survived] BlockStatement
+packages/opencode/src/permission/index.ts:103:27
+-           Effect.sync(() => {
+-             pending.delete(id)
+-           }),
++           Effect.sync(() => {}),
+
+[Survived] CallExpression
+packages/opencode/src/permission/index.ts:104:11
+-             pending.delete(id)
++             ;
+
+[Survived] StringLiteral
+packages/opencode/src/permission/index.ts:109:29
+-       const reply = Effect.fn("Permission.reply")(function* (input: PermissionV1.ReplyInput) {
++       const reply = Effect.fn("")(function* (input: PermissionV1.ReplyInput) {
+
+[Survived] ConditionalExpression
+packages/opencode/src/permission/index.ts:112:11
+-         if (!existing) return yield* new PermissionV1.NotFoundError({ requestID: input.requestID })
++         if (false) return yield* new PermissionV1.NotFoundError({ requestID: input.requestID })
+
+[Survived] ObjectLiteral
+packages/opencode/src/permission/index.ts:112:67
+-         if (!existing) return yield* new PermissionV1.NotFoundError({ requestID: input.requestID })
++         if (!existing) return yield* new PermissionV1.NotFoundError({})
+
+[Survived] CallExpression
+packages/opencode/src/permission/index.ts:114:7
+-         pending.delete(input.requestID)
++         ;
+
+[Survived] ObjectLiteral
+packages/opencode/src/permission/index.ts:115:44
+-         yield* events.publish(Event.Replied, {
+-           sessionID: existing.info.sessionID,
+-           requestID: existing.info.id,
+-           reply: input.reply,
+-         })
++         yield* events.publish(Event.Replied, {})
+
+[Survived] ObjectLiteral
+packages/opencode/src/permission/index.ts:125:47
+-               ? new PermissionV1.CorrectedError({ feedback: input.message })
++               ? new PermissionV1.CorrectedError({})
+
+[Survived] BlockStatement
+packages/opencode/src/permission/index.ts:129:53
+-           for (const [id, item] of pending.entries()) {
+-             if (item.info.sessionID !== existing.info.sessionID) continue
+-             pending.delete(id)
+-             yield* events.publish(Event.Replied, {
+-               sessionID: item.info.sessionID,
+-               requestID: item.info.id,
+-               reply: "reject",
+-             })
+-             yield* Deferred.fail(item.deferred, new PermissionV1.RejectedError())
+-           }
++           for (const [id, item] of pending.entries()) {}
+
+[Survived] ConditionalExpression
+packages/opencode/src/permission/index.ts:130:15
+-             if (item.info.sessionID !== existing.info.sessionID) continue
++             if (true) continue
+
+[Survived] ConditionalExpression
+packages/opencode/src/permission/index.ts:130:15
+-             if (item.info.sessionID !== existing.info.sessionID) continue
++             if (false) continue
+
+[Survived] EqualityOperator
+packages/opencode/src/permission/index.ts:130:15
+-             if (item.info.sessionID !== existing.info.sessionID) continue
++             if (item.info.sessionID === existing.info.sessionID) continue
+
+[Survived] CallExpression
+packages/opencode/src/permission/index.ts:131:11
+-             pending.delete(id)
++             ;
+
+[Survived] ObjectLiteral
+packages/opencode/src/permission/index.ts:132:48
+-             yield* events.publish(Event.Replied, {
+-               sessionID: item.info.sessionID,
+-               requestID: item.info.id,
+-               reply: "reject",
+-             })
++             yield* events.publish(Event.Replied, {})
+
+[Survived] StringLiteral
+packages/opencode/src/permission/index.ts:135:20
+-               reply: "reject",
++               reply: "",
+
+[Survived] ConditionalExpression
+packages/opencode/src/permission/index.ts:143:11
+-         if (input.reply === "once") return
++         if (true) return
+
+[Survived] ConditionalExpression
+packages/opencode/src/permission/index.ts:143:11
+-         if (input.reply === "once") return
++         if (false) return
+
+[Survived] EqualityOperator
+packages/opencode/src/permission/index.ts:143:11
+-         if (input.reply === "once") return
++         if (input.reply !== "once") return
+
+[Survived] StringLiteral
+packages/opencode/src/permission/index.ts:143:27
+-         if (input.reply === "once") return
++         if (input.reply === "") return
+
+[Survived] BlockStatement
+packages/opencode/src/permission/index.ts:145:51
+-         for (const pattern of existing.info.always) {
+-           approved.push({
+-             permission: existing.info.permission,
+-             pattern,
+-             action: "allow",
+-           })
+-         }
++         for (const pattern of existing.info.always) {}
+
+[Survived] ObjectLiteral
+packages/opencode/src/permission/index.ts:146:23
+-           approved.push({
+-             permission: existing.info.permission,
+-             pattern,
+-             action: "allow",
+-           })
++           approved.push({})
+
+[Survived] StringLiteral
+packages/opencode/src/permission/index.ts:149:19
+-             action: "allow",
++             action: "",
+
+[Survived] BlockStatement
+packages/opencode/src/permission/index.ts:153:51
+-         for (const [id, item] of pending.entries()) {
+-           if (item.info.sessionID !== existing.info.sessionID) continue
+-           const ok = item.info.patterns.every(
+-             (pattern) => evaluate(item.info.permission, pattern, approved).action === "allow",
+-           )
+-           if (!ok) continue
+-           pending.delete(id)
+-           yield* events.publish(Event.Replied, {
+-             sessionID: item.info.sessionID,
+-             requestID: item.info.id,
+-             reply: "always",
+-           })
+-           yield* Deferred.succeed(item.deferred, undefined)
+-         }
++         for (const [id, item] of pending.entries()) {}
+
+[Survived] ConditionalExpression
+packages/opencode/src/permission/index.ts:154:13
+-           if (item.info.sessionID !== existing.info.sessionID) continue
++           if (true) continue
+
+[Survived] ConditionalExpression
+packages/opencode/src/permission/index.ts:154:13
+-           if (item.info.sessionID !== existing.info.sessionID) continue
++           if (false) continue
+
+[Survived] EqualityOperator
+packages/opencode/src/permission/index.ts:154:13
+-           if (item.info.sessionID !== existing.info.sessionID) continue
++           if (item.info.sessionID === existing.info.sessionID) continue
+
+[Survived] MethodExpression
+packages/opencode/src/permission/index.ts:155:20
+-           const ok = item.info.patterns.every(
+-             (pattern) => evaluate(item.info.permission, pattern, approved).action === "allow",
+-           )
++           const ok = item.info.patterns.some(pattern => evaluate(item.info.permission, pattern, approved).action === "allow")
+
+[Survived] ArrowFunction
+packages/opencode/src/permission/index.ts:156:11
+-             (pattern) => evaluate(item.info.permission, pattern, approved).action === "allow",
++             () => undefined,
+
+[Survived] ConditionalExpression
+packages/opencode/src/permission/index.ts:156:24
+-             (pattern) => evaluate(item.info.permission, pattern, approved).action === "allow",
++             (pattern) => true,
+
+[Survived] ConditionalExpression
+packages/opencode/src/permission/index.ts:156:24
+-             (pattern) => evaluate(item.info.permission, pattern, approved).action === "allow",
++             (pattern) => false,
+
+[Survived] EqualityOperator
+packages/opencode/src/permission/index.ts:156:24
+-             (pattern) => evaluate(item.info.permission, pattern, approved).action === "allow",
++             (pattern) => evaluate(item.info.permission, pattern, approved).action !== "allow",
+
+[Survived] StringLiteral
+packages/opencode/src/permission/index.ts:156:85
+-             (pattern) => evaluate(item.info.permission, pattern, approved).action === "allow",
++             (pattern) => evaluate(item.info.permission, pattern, approved).action === "",
+
+[Survived] BooleanLiteral
+packages/opencode/src/permission/index.ts:158:13
+-           if (!ok) continue
++           if (ok) continue
+
+[Survived] ConditionalExpression
+packages/opencode/src/permission/index.ts:158:13
+-           if (!ok) continue
++           if (true) continue
+
+[Survived] ConditionalExpression
+packages/opencode/src/permission/index.ts:158:13
+-           if (!ok) continue
++           if (false) continue
+
+[Survived] CallExpression
+packages/opencode/src/permission/index.ts:159:9
+-           pending.delete(id)
++           ;
+
+[Survived] ObjectLiteral
+packages/opencode/src/permission/index.ts:160:46
+-           yield* events.publish(Event.Replied, {
+-             sessionID: item.info.sessionID,
+-             requestID: item.info.id,
+-             reply: "always",
+-           })
++           yield* events.publish(Event.Replied, {})
+
+[Survived] StringLiteral
+packages/opencode/src/permission/index.ts:163:18
+-             reply: "always",
++             reply: "",
+
+[Survived] StringLiteral
+packages/opencode/src/permission/index.ts:169:28
+-       const list = Effect.fn("Permission.list")(function* () {
++       const list = Effect.fn("")(function* () {
+
+Ran 0.99 tests per mutant on average.
+----------------|------------------|----------|-----------|------------|----------|----------|
+                | % Mutation score |          |           |            |          |          |
+File            |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
+----------------|--------|---------|----------|-----------|------------|----------|----------|
+All files       |  47.06 |   47.06 |       55 |         1 |         63 |        0 |        0 |
+ core           |  62.50 |   62.50 |       15 |         0 |          9 |        0 |        0 |
+  src           |  62.50 |   62.50 |       15 |         0 |          9 |        0 |        0 |
+   util         |  62.50 |   62.50 |       15 |         0 |          9 |        0 |        0 |
+    wildcard.ts |  62.50 |   62.50 |       15 |         0 |          9 |        0 |        0 |
+ opencode       |  43.16 |   43.16 |       40 |         1 |         54 |        0 |        0 |
+  src           |  43.16 |   43.16 |       40 |         1 |         54 |        0 |        0 |
+   permission   |  43.16 |   43.16 |       40 |         1 |         54 |        0 |        0 |
+    index.ts    |  43.16 |   43.16 |       40 |         1 |         54 |        0 |        0 |
+----------------|--------|---------|----------|-----------|------------|----------|----------|
+[32m18:07:31 (44066) INFO HtmlReporter[39m Your report can be found at: file:///Users/anna/Desktop/17313%20fdtns%20of%20software%20dev/fall-26-opencode-seg-fault/reports/annalin/mutation.html
+[32m18:07:31 (44066) INFO MutationTestExecutor[39m Done in 15 minutes and 32 seconds.
+[32m18:07:31 (44066) INFO Sandbox[39m Resetting your original files from .stryker-tmp/backup-WHTllV.
