@@ -39,3 +39,5 @@ Properties written or suggested by opencode or another AI tool: R1, R2, R3, R5, 
 
 ## Run, Triage, Fix
 I did not modify the `/hint` behavior, but I refactored the code to put the `/hint` command decision logic in `packages/tui/src/prompt/hint.ts` so it could be used in the property tests as well. 
+
+## Hand-Written Mutants
