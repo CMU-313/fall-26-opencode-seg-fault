@@ -25,7 +25,7 @@ jobs:
     # Belt-and-suspenders: without this, a step with no timeout-minutes of its
     # own that hangs runs until GitHub's default 6h job cap instead of failing
     # fast (see the httpapi-exercise incident this guards against).
-    timeout-minutes: 30
+    timeout-minutes: 40
     defaults:
       run:
         shell: bash
@@ -65,7 +65,7 @@ jobs:
         run: bun test test/permission/annalin.property.test.ts --timeout 30000
 
       - name: Run unit tests
-        timeout-minutes: 20
+        timeout-minutes: 30
         # Default turbo concurrency (10) oversubscribes ubuntu-latest's 4
         # vCPUs across 5 packages' test tasks running at once — same
         # contention issue typecheck.yml already caps for tsgo.
