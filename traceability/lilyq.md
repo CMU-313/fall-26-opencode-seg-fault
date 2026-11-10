@@ -15,8 +15,8 @@
 
 ## Requirements
 
-| ID | Interview evidence | Requirement | Acceptance Criteria | Changed in P4? | Property (kind) | Test |
-|---|---|---|---|---|---|---|
+| ID | Interview evidence | Requirement | Acceptance Criteria | Changed in P4? | Property (kind) | Test | Mutants it Kills |
+|---|---|---|---|---|---|---|---|
 | R1 | C-4, S-2, O-3 | When a user enters a hint level that is not one of `subtle`, `moderate`, `detailed`, or `none` (case-insensitively), the system must reject the selection and return an error toast that lists the supported hint levels, so the user can choose again. | Given `/hint advanced` or another unsupported hint level, the handler returns `handled: true`, an unchanged active level, and an error toast whose message lists the supported levels (`subtle`, `moderate`, `detailed`, `none`). | Yes | Invariant | Generate unsupported identifier-like hint levels beginning with a letter. Assert the command is rejected, the active setting is preserved, and an error toast is returned. [`R1: unsupported hint levels are rejected with an error listing the supported levels`] |
 | R2 | C-4, S-2, O-2 | When an unsupported hint level is entered, the system must keep the previously active hint level. | Given `detailed` is active, entering `/hint advanced` shows the error from R1 and the active level is still `detailed`. | No | Invariant | Be on an active supported setting (`subtle`, `moderate`, `detailed`, `none`), and an unsupported input. Assert the error appears and the active setting is unchanged. [`R2: rejected hint levels preserve the active setting`]|
 | R3 | C-7, S-5 | Hint-level selection must be case-insensitive. | Entering `/hint subtle`, `/hint Subtle`, or `/hint SUBTLE` activates the same `subtle` hint level. | No | Metamorphic | Generate a supported setting and a mixed-case spelling. Assert it produces the same canonical setting as its lowercase spelling. [`R3: changing a supported setting's casing preserves its meaning`]|
@@ -38,6 +38,15 @@ Properties written or suggested by opencode or another AI tool: R1, R2, R3, R5, 
 | R8 | The system must provide visible confirmation when a user successfully changes their hint level. | When a user successfully changes their hint level, the command handler must return an informational toast identifying the newly active hint level. | The original requirement did not specify how confirmation should be provided or verified. The revised requirement defines a deterministic, testable response while preserving the user's need for feedback when changing hint levels. |
 
 ## Run, Triage, Fix
+
 I did not modify the `/hint` behavior, but I refactored the code to put the `/hint` command decision logic in `packages/tui/src/prompt/hint.ts` so it could be used in the property tests as well. 
 
 ## Hand-Written Mutants
+
+| ID | Requirement Targeted | Change | Predicted Killer | Actual Result | 
+|---|---|---|---|---|
+| H1 | R1 | `src/prompt/hint.ts`: Replace the invalid-level error message, `hintUsage`, with a generic `"Invalid hint level"` message. This removes the list of supported levels from the error. | `R1: unsupported hint levels are rejected with an error listing the supported levels` | result |
+| H2 | R2 | `src/prompt/hint.ts`: Replace `hintLevel: active` with `hintLevel: undefined` in the invalid-input response. An invalid `/hint` command now disables any active hint level instead of preserving it. | `R2: rejected hint levels preserve the active setting` | result |
+| H3 | R3 | `src/prompt/hint.ts`: Remove `.toLowerCase()` from `const setting = match[1]?.toLowerCase()`. Valid hint levels now become case-sensitive, so `/hint Subtle` is rejected. | `R3: changing a supported setting's casing preserves its meaning` | result |
+| H4 | R5 | `src/prompt/hint.ts`: Change `isHintLevel` so it accepts any non-none prefix of a supported level. For example, `/hint sub` is incorrectly treated as `subtle`. | `R5: misspellings and abbreviations are rejected and the active setting is preserved` | result | 
+| H5 | R8 | `src/prompt/hint.ts`: Replace the successful-command message `Hint level: ${setting}` with the generic `"Hint level updated"`. The command succeeds but no longer tells the user which hint level is active. | `R8: successful hint changes always provide confirmation` | result | 
