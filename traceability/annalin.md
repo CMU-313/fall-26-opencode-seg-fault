@@ -16,7 +16,7 @@ In this table, an **effective rule** is the last matching rule in the ordered ru
 | R4  | S-12: “I would expect it to never delete any file, even if the filename changes.” O-12: “It shouldn’t matter what the file is called. If deleting files is blocked, it should block all of them.”                | Commands governed by the same effective permission pattern must receive the same permission decision. In particular, changing a deletion target from one file or folder to another must preserve denial under an effective `rm *` deny rule. | Given `{"rm *": "deny"}`, both `rm file.txt` and `rm folder/file.txt` are denied. For independently generated targets, changing `rm <first>` to `rm <second>` or `rm -r <second>/` preserves the same deny decision, with no later matching override.                                                                                                                                                                                                             | Yes            | Renaming a deletion target or changing it to a folder preserves denial (metamorphic).  | [`annalin.property.test.ts`](../packages/opencode/test/permission/annalin.property.test.ts), `R4: changing a deletion target preserves denial under rm *`     | H5               |
 | R5  | O-18: “Maybe a history of the commands it ran and whether they were allowed or denied, so I could check what happened.”                                                                                          | OpenCode must provide users with a record of permission decisions so they can verify which commands were allowed or denied.                                                                                                                  | Given `rm file.txt` matching a deny rule, OpenCode records the command and its denied status in an action log that the user can review.                                                                                                                                                                                                                                                                                                                           | No             | Not selected for property testing in P4.                                               | None; implementation is not claimed by this submission.                                                                                                       | Not tested       |
 
-Properties written or suggested by opencode or another AI tool: **R1, R2, R3, and R4**, including generators, were written with Codex assistance. The traceability review and CI step were also prepared with Codex assistance.
+Properties written or suggested by opencode or another AI tool: **R1, R2, R3, and R4**, including generators, were written with Codex assistance. The seven Project 5 strengthening properties were written with AI assistance and checked against the mutants before committing. The agent failure case property was written by opencode. The traceability review and CI step were also prepared with Codex assistance.
 
 ## Requirement changes
 
@@ -26,6 +26,19 @@ Properties written or suggested by opencode or another AI tool: **R1, R2, R3, an
 | R4  | Commands matching the same permission pattern must receive the same permission decision. | Commands governed by the same effective permission pattern must receive the same permission decision. In particular, changing a deletion target from one file or folder to another must preserve denial under an effective `rm *` deny rule. | Two commands can match the same broad pattern while only one matches a later exception. The original wording would conflict with ordered overrides. The revision makes the unchanged-rule condition explicit and retains the interviewees' expectation that filenames alone do not bypass a general deletion block.                                                                      |
 
 R2 is feasible and checkable through the pending request, approval reply, and blocked execution continuation; its acceptance criteria use the effective-rule interpretation defined above. R3 is feasible and checkable by restoring the configuration and evaluating it in the same context. R5 is also feasible and its command/status example is checkable, so it is kept rather than replaced with a weaker requirement about internal logging. R5 is not established by these tests: the current permission module logs evaluation internally, but that alone does not prove there is a user-reviewable action history.
+
+## P5 requirement clarifications
+
+Mutation testing in Project 5 showed behavior that R1-R5 did not state. These clarifications come from reading the permission implementation and its surviving mutants, not from the interviews, so they have no interview evidence.
+
+| ID | Clarification | Property |
+|---|---|---|
+| R2.1 | A command that no rule matches is treated as `ask`, with pattern `*`. | `R2: a command with no matching rule defaults to ask` |
+| R2.2 | A request whose commands are all allowed runs at once and creates no approval request. A denied request reports only the rules for its permission. | `R1/R2: allowed requests run without asking, denials report only their rules` |
+| R2.3 | An approval request keeps a caller-supplied ID. A cancelled request is removed from the pending list. Rejecting with a message fails with `CorrectedError` carrying that message. Each reply publishes exactly one reply event, and replying to a request that is not pending fails with `NotFoundError` naming that request. | `R2: approval requests keep their identity and every reply is handled once` |
+| R2.4 | Rejecting a request also rejects every other pending request in the same session, and no pending request in another session. | `R2: rejecting a request rejects its whole session and no other` |
+| R2.5 | After an `always` reply, the request's saved patterns are remembered: already pending requests in the same session that those patterns fully cover run without asking, and later covered requests run without asking. A `once` reply saves nothing, and a request only partly covered still asks. | `R2: always remembers approvals for the session, once does not` |
+| R4.1 | A rule pattern matches the whole command: `?` stands for exactly one character, `*` also covers commands containing line breaks, and matching is case-sensitive outside Windows. | `R4: rule patterns match whole commands exactly` |
 
 ## Generator choices and test scope
 
@@ -118,6 +131,62 @@ The unmodified property file passed all four tests before mutation. H5 changed w
 
 The correct wildcard source was restored after this experiment, and all four properties passed again. H5 is a deliberate test fault, not a production fix.
 
+## Stryker comparison
+
+### Setup
+
+- Configuration: [`stryker.annalin.config.json`](../packages/opencode/stryker.annalin.config.json). It uses the `command` test runner to run only `test/permission/annalin.property.test.ts`, and mutates only the code my properties call: `packages/opencode/src/permission/index.ts` lines 28-38, 67-169 and 186-198 (`evaluate`, `ask`, `reply`, `list`, `fromConfig`) and `packages/core/src/util/wildcard.ts` lines 3-14 (`Wildcard.match`).
+- fast-check seed: **42** (`{ numRuns: 100, seed: 42 }` for every property).
+- Reports: [mutation.corrected-initial.html](../mutants/annalin/mutation.corrected-initial.html) (before strengthening) and [mutation.html](../mutants/annalin/mutation.html) (after strengthening). Logs: [stryker.corrected-initial.log](../mutants/annalin/stryker.corrected-initial.log) and [stryker.strengthened.log](../mutants/annalin/stryker.strengthened.log).
+
+### Mutation score
+
+| Run | Mutants | Killed | Timed out | Survived | Score as Stryker reports it |
+|---|---|---|---|---|---|
+| Initial (R1-R4 only) | 119 | 55 | 1 | 63 | **47.06%** |
+| After strengthening (11 properties) | 119 | 103 | 3 | 13 | **89.08%** |
+
+The initial run was 43.16% on `index.ts` and 62.50% on `wildcard.ts`. Most initial survivors were in `reply`: rejecting other pending requests in the same session, keeping other sessions untouched, and remembering `always` approvals. R2 always created exactly one pending request in one session with an empty `always` list, so none of that code could change the result.
+
+### Strengthening
+
+All new tests are fast-check properties with generated inputs; no example-based tests were added. They are at the bottom of [`annalin.property.test.ts`](../packages/opencode/test/permission/annalin.property.test.ts).
+
+| New property | Requirement | Survivors it kills |
+|---|---|---|
+| `R4: rule patterns match whole commands exactly` | R4.1 | `?` matching zero characters, `^` and `$` anchors removed, case-insensitive matching off Windows, dot-all flag removed (newline filenames) |
+| `R2: a command with no matching rule defaults to ask` | R2.1 | Fallback rule replaced by `{}`, fallback action `""`, fallback pattern `""` |
+| `R1/R2: allowed requests run without asking, denials report only their rules` | R1, R2.2 | `needsAsk = true`, `if (false) continue` / `return` on allow, `DeniedError.ruleset` unfiltered or empty |
+| `R2: approval requests keep their identity and every reply is handled once` | R2.3 | `request.id && ...`, cancelled asks leaking pending entries, unknown replies defecting instead of `NotFoundError`, `NotFoundError` losing its ID, `CorrectedError` losing feedback, empty reply event |
+| `R2: rejecting a request rejects its whole session and no other` | R2.4 | Every mutant of the reject fan-out loop (loop emptied, session check flipped or removed, empty or wrong reject event) |
+| `R2: always remembers approvals for the session, once does not` | R2.5 | `once`/`always` early return swapped or removed, saved rule emptied or not `allow`, every auto-resolution mutant (`every` to `some`, session check flipped, covered/uncovered reversed, wrong event) |
+| `R1: a denial is found even after commands that need approval` | R1 | Red team RT1 (see Red team section) |
+
+### Equivalent mutants
+
+Three survivors are equivalent on the platforms I test on (macOS and Linux). They are platform-specific equivalents, not equivalent everywhere.
+
+- **`process.platform === "win32" ? ...` changed to `false ? ...`**, **`process.platform === ""`**, and **`"si"` changed to `""` in the Windows branch** (`wildcard.ts:13`). All three only change which regex flags are used on Windows. On macOS and Linux, where the tests and CI run, the non-Windows branch always produces the same `"s"` flag as the original, so every input matches exactly as before. They are equivalent on these platforms and could only be killed by running the properties on Windows.
+
+### Remaining survivors that are not equivalent
+
+- **Seven tracing and logging mutants**: `Effect.fn("")` for `ask`, `reply` and `list`, and the `"evaluated"` and `"asking"` log labels and fields emptied. They change span names and log output, which a developer could observe, so they are not equivalent. No requirement covers them: R5 asks for a user-reviewable record of decisions, and internal debug logs are not that record, so I did not write properties that pin exact log text.
+
+- **Three `pending.delete(...)` removals** in `reply` (`index.ts:114`), the reject fan-out (`index.ts:131`), and `always` auto-resolution (`index.ts:159`). Each entry is also deleted by the `Effect.ensuring` finalizer in `ask`, and in my runs that finalizer had already run when the properties next read the pending list or the reply events. That only shows what my tests observed. Two replies to the same request arriving concurrently could both find the entry before the finalizer runs and publish two reply events, so I do not claim these are equivalent. A property that sends concurrent duplicate replies and expects exactly one success and one `NotFoundError` would target them.
+
+### Final score
+
+- **As Stryker reports it: 89.08%** (106 of 119 killed or timed out; 87.50% on `wildcard.ts`, 89.47% on `index.ts`).
+- **Excluding the 3 platform-specific equivalent mutants (macOS/Linux): 91.38%** (106 of 116). The remaining 10 survivors are the seven tracing and logging mutants and the three unresolved `pending.delete` removals above.
+
+### Comparison questions
+
+**Which of my hand-written mutants did Stryker never generate, and why?** Stryker generated none of H1-H5. H1 (treat a matched deny like allow and keep going), H3 (complete a rejected request successfully), H4 (turn a nested `allow` into `ask`), and H5 (make `*` stop at `/` by translating it to `[^/]*`) all replace code with a different value that is still meaningful. Stryker's operators only make fixed changes, such as replacing a string with `""`, flipping a condition or operator, or emptying a block. So it produces `"allow"` to `""`, never `"allow"` to `"ask"`, and `".*"` to `""`, never `".*"` to `"[^/]*"`. H2 (return before awaiting the reply) needs a whole statement replaced by an early `return`, which no operator does. Stryker came closest with the mutant that empties the `Effect.ensuring` cleanup, but that still awaits the reply. For H1 it produced `if (false)` on the deny check, which turns a deny into an ask, not into an allow.
+
+**Which Stryker survivors would I never have thought of, and are any plausible real bugs?** I would not have thought of removing the regex `s` flag, changing `every` to `some` in `always` auto-resolution, flipping the session check in the reject fan-out, or changing `request.id ?? ascending()` to `request.id && ascending()`. Several are plausible. Removing the `s` flag looks like a harmless cleanup, and Jay Yip independently wrote the same change as red team mutant RT2. `every` versus `some` and `===` versus `!==` on a session ID are one-character slips that would quietly approve or reject the wrong requests. `??` versus `&&` is a common typo. Others are not realistic, such as `Effect.fn("")`, which no developer would write on purpose.
+
+**What does each approach find that the other doesn't?** My hand-written mutants were aimed at whole requirements: each one broke the main promise of R1-R4 in a way a reviewer might miss, and all five were killed, which showed the properties checked the core flows. They could not show what the properties never exercised. Stryker did that by mutating every line in scope. Its 63 initial survivors pointed to whole behaviors I had never written as requirements: several pending requests at once, separate sessions, cancellation, and remembered `always` approvals. In return, Stryker produces many trivial or equivalent mutants (names, log text, Windows-only flags, cleanup that is hard to observe) that need human judgment, and it never produces the meaningful wrong-value bugs that hand-written mutants target.
+
 ## Agent failure case
 
 ### Transcript excerpt
@@ -168,18 +237,18 @@ test("R4: changing a deletion target preserves denial under an effective rm * ru
 
 ### The mutant it let survive
 
-Stryker mutant #9 in `packages/core/src/util/wildcard.ts` ([S9-dotall.patch](../mutants/annalin/S9-dotall.patch)) removes the regex `s` (dot-all) flag on non-Windows platforms:
+The dot-all survivor from my initial Stryker run (StringLiteral at `packages/core/src/util/wildcard.ts:13:80`, labeled S9 in my survivor notes; [S9-dotall.patch](../mutants/annalin/S9-dotall.patch)) removes the regex `s` (dot-all) flag on non-Windows platforms:
 
 ```diff
 -  return new RegExp("^" + escaped + "$", process.platform === "win32" ? "si" : "s").test(normalized)
 +  return new RegExp("^" + escaped + "$", process.platform === "win32" ? "si" : "").test(normalized)
 ```
 
-Without the flag, `*` no longer matches a line break. A deletion target whose name contains a newline, such as `rm` followed by `\na`, stops matching `rm *` and falls through to the `"*": "allow"` rule. The deletion is allowed instead of denied, which violates R4. The opencode property still passed with this mutant applied ([opencode-S9.log](../mutants/annalin/opencode-S9.log)). It also passed against H1 to H4 and killed only H5.
+Without the flag, `*` no longer matches a line break. A deletion target whose name contains a newline, such as `rm` followed by `\na`, stops matching `rm *`. The `"*": "allow"` rule does not match it either, because its `*` also cannot cross the line break, so evaluation falls back to the default `ask`. The command is no longer denied, which violates R4. The opencode property still passed with this mutant applied ([opencode-S9.log](../mutants/annalin/opencode-S9.log)).
 
 ### Why the property was too weak
 
-The generator never reaches the bug. Every name segment comes from `/^[a-zA-Z0-9._-]+$/`, so the property never produces a space, line break, tab, Unicode letter, or regex symbol, even though real filenames can contain all of these. Mutant #9 only changes behavior for names with line breaks, so all 100 generated cases behave the same under the mutant and the original code. opencode read `annalin.property.test.ts`, whose generator already includes spaces, Unicode, and regex symbols, but it still chose the narrow character class. It then reported "1 pass, 0 fail" as verification, although a passing run only shows the property agrees with the current code, not that it can detect a fault.
+The generator never reaches the bug. Every name segment comes from `/^[a-zA-Z0-9._-]+$/`, so the property never produces a space, line break, tab, Unicode letter, or regex symbol, even though real filenames can contain all of these. This mutant only changes behavior for names with line breaks, so all 100 generated cases behave the same under the mutant and the original code. opencode read `annalin.property.test.ts`, whose generator already includes spaces, Unicode, and regex symbols, but it still chose the narrow character class. It then reported "1 pass, 0 fail" as verification, although a passing run only shows the property agrees with the current code, not that it can detect a fault.
 
 ### Strengthened version and evidence
 
@@ -196,7 +265,7 @@ const target = fc.array(segment, { minLength: 1, maxLength: 4 }).map((parts) => 
 ```
 
 - On the original code it passes: 1 pass, 0 fail ([strengthened-baseline.log](../mutants/annalin/strengthened-baseline.log)).
-- With mutant #9 applied it fails: 0 pass, 1 fail, counterexample `["\na","a",false,false]`, meaning `rm` followed by a name starting with a newline was not denied ([strengthened-S9.log](../mutants/annalin/strengthened-S9.log)).
+- With the dot-all mutant applied it fails: 0 pass, 1 fail, counterexample `["\na","a",false,false]`, meaning `rm` followed by a name starting with a newline was not denied ([strengthened-S9.log](../mutants/annalin/strengthened-S9.log)).
 - It still kills H5.
 
 ## Red team
@@ -206,7 +275,7 @@ My feature was claimed by **Jay Yip (jayy, Team Zero)**, who posted three mutant
 | ID | Requirement | Change | Result against the original four properties | Result after strengthening |
 |---|---|---|---|---|
 | RT1 | R1 | Adds `break` after `needsAsk = true` in `Permission.ask`, so once one command needs approval the loop stops and never checks later commands for a deny. | Survived. R1 only mixed the denied `rm` with `git status`, which is always allowed, so no ask command ever came before the deny. | Killed by the new property `R1: a denial is found even after commands that need approval` ([RT1.log](../mutants/annalin/redteam-received/RT1.log)). |
-| RT2 | R4 | Removes the `s` regex flag in `wildcard.ts`, so `*` no longer matches a line break and `rm` of a name containing a newline escapes the `rm *` deny. | Survived. The R4 generator includes spaces, Unicode, and regex symbols, but never a line break. | Killed by `R4: rule patterns match whole commands exactly`, which checks that `rm *` matches commands containing a newline ([RT2.log](../mutants/annalin/redteam-received/RT2.log)). This is the same behavior change as Stryker mutant #9 in the agent failure case. |
+| RT2 | R4 | Removes the `s` regex flag in `wildcard.ts`, so `*` no longer matches a line break and `rm` of a name containing a newline escapes the `rm *` deny. | Survived. The R4 generator includes spaces, Unicode, and regex symbols, but never a line break. | Killed by `R4: rule patterns match whole commands exactly`, which checks that `rm *` matches commands containing a newline ([RT2.log](../mutants/annalin/redteam-received/RT2.log)). This is the same behavior change as the dot-all survivor in the agent failure case. |
 | RT3 | R2 | Changes the `always` auto-resolution check from `=== "allow"` to `!== "deny"`, so approving one request with `always` also approves other waiting requests that still need approval. | Survived. R2 only ever had one pending request, so there was never a second request for `always` to wrongly approve. | Killed by `R2: always remembers approvals for the session, once does not`, which keeps a partly covered request pending and checks that it is not auto-approved ([RT3.log](../mutants/annalin/redteam-received/RT3.log)). |
 
 The fix for RT1 is a new property. RT2 and RT3 are killed by properties added during Stryker strengthening. None of the three is equivalent, since each one changes an observable permission decision. Each log shows 10 pass and 1 fail with the mutant applied, and all 11 properties pass on the original code.
