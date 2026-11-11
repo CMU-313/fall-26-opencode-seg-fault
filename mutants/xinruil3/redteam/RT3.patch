@@ -1,0 +1,13 @@
+diff --git a/packages/opencode/src/command/template/newcomer.txt b/packages/opencode/src/command/template/newcomer.txt
+index b67b4a6..9346e5b 100644
+--- a/packages/opencode/src/command/template/newcomer.txt
++++ b/packages/opencode/src/command/template/newcomer.txt
+@@ -5,7 +5,7 @@ $ARGUMENTS
+ 
+ The command has already collected the experience level and scope from the user. Investigate only the selected scope unless the user chose `All areas`. Start with high-signal files such as the README, package manifests, workspace configuration, and source entry points. Then inspect only enough implementation and test files to verify the requested information. Do not modify files or run commands that change the repository.
+ 
+-Return the guide as Markdown tables, not an essay. Do not write explanatory paragraphs or prose lists before, between, or after the tables. A short title is allowed. For `All areas`, present all of the following table sections. For a specific selection, return only the relevant self-contained table.
++Return the guide as Markdown tables, not an essay. Do not write explanatory paragraphs or prose lists before, between, or after the tables. A short title is allowed. For `All areas`, present all of the following table sections, in whatever order best fits the project. For a specific selection, return only the relevant self-contained table.
+ 
+ ## Project overview
+ Use a Markdown table with the columns `Topic` and `Summary`. Explain the project's purpose, primary users, and main technology in concise cells.

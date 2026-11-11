@@ -588,6 +588,12 @@ const layer = Layer.effect(
         if (learningMode !== undefined) {
           result.learning_mode = learningMode
         }
+        if (learningMode === undefined && process.env.OPENCODE_LEARNING_MODE?.trim()) {
+          yield* Effect.logWarning(
+            "OPENCODE_LEARNING_MODE is invalid; expected true, 1, false or 0. Using config-file setting.",
+            { value: process.env.OPENCODE_LEARNING_MODE },
+          )
+        }
 
         return {
           config: result,

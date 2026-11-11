@@ -72,7 +72,7 @@ export const Flag = {
   // Unlike boolean flags that only opt in, learning mode can be forced off as well as on.
   // Unset or unrecognized values return undefined so the config file decides.
   get OPENCODE_LEARNING_MODE() {
-    const value = process.env["OPENCODE_LEARNING_MODE"]?.toLowerCase()
+    const value = process.env["OPENCODE_LEARNING_MODE"]?.trim().toLowerCase()
     if (value === "true" || value === "1") return true
     if (value === "false" || value === "0") return false
     return undefined

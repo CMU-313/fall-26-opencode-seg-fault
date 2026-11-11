@@ -1,0 +1,13 @@
+diff --git a/packages/opencode/src/config/config.ts b/packages/opencode/src/config/config.ts
+index 0315b0a..0fff9dd 100644
+--- a/packages/opencode/src/config/config.ts
++++ b/packages/opencode/src/config/config.ts
+@@ -589,7 +589,7 @@ const layer = Layer.effect(
+           result.learning_mode = learningMode
+         }
+         if (learningMode === undefined && process.env.OPENCODE_LEARNING_MODE?.trim()) {
+-          yield* Effect.logWarning(
++          yield* Effect.logDebug(
+             "OPENCODE_LEARNING_MODE is invalid; expected true, 1, false or 0. Using config-file setting.",
+             { value: process.env.OPENCODE_LEARNING_MODE },
+           )

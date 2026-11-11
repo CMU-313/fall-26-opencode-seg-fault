@@ -1,0 +1,13 @@
+diff --git a/packages/opencode/src/command/template/newcomer.txt b/packages/opencode/src/command/template/newcomer.txt
+index b67b4a6..f443f93 100644
+--- a/packages/opencode/src/command/template/newcomer.txt
++++ b/packages/opencode/src/command/template/newcomer.txt
+@@ -11,7 +11,7 @@ Return the guide as Markdown tables, not an essay. Do not write explanatory para
+ Use a Markdown table with the columns `Topic` and `Summary`. Explain the project's purpose, primary users, and main technology in concise cells.
+ 
+ ## Major components
+-Present the codebase guide as a compact Markdown table that renders clearly in the terminal. Use these columns: `Category`, `Paths`, `What it contains`, and `What to do`. Include rows for `Entry points`, `Configuration`, `Tests only`, `Documentation`, and `Skip initially`; use `Not found` when a category does not exist. Add other project-specific rows, such as frontend, backend, or application logic, when useful. Put repository paths in backticks and keep every cell concise. For the `Documentation` row, summarize what files such as `README.md` tell the newcomer instead of merely listing them. For `Skip initially`, name code the newcomer does not need to understand fully yet and explain why it can wait.
++Present the codebase guide as a compact Markdown table that renders clearly in the terminal. Use these columns: `Category`, `Paths`, `What it contains`, and `What to do`. Include rows for `Entry points`, `Configuration`, `Tests only`, `Documentation`, and `Skip initially`; fill every row with the most likely path for that category. Add other project-specific rows, such as frontend, backend, or application logic, when useful. Put repository paths in backticks and keep every cell concise. For the `Documentation` row, summarize what files such as `README.md` tell the newcomer instead of merely listing them. For `Skip initially`, name code the newcomer does not need to understand fully yet and explain why it can wait.
+ 
+ ## Where to start
+ Use a Markdown table with the columns `Order`, `Path`, and `What to learn`. Put the most important entry-point files in a useful reading order.
