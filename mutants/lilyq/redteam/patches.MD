@@ -6,8 +6,19 @@
 `R3: the final allowed step has no tools, carries the max-steps prompt, and runs no tools`
 
 ```diff
+diff --git a/packages/core/src/session/runner/max-steps.ts
+--- a/packages/core/src/session/runner/max-steps.ts
++++ b/packages/core/src/session/runner/max-steps.ts
+@@ -10,7 +10,7 @@
+ Response must include:
+ - Statement that maximum steps for this agent have been reached
+ - Summary of what has been accomplished so far
 - - List of any remaining tasks that were not completed
 + - Briefly describe the overall outcome without discussing unfinished tasks
+ - Recommendations for what should be done next
+ 
+ Any attempt to use tools is a critical violation. Respond with text ONLY.`
+
 ```
 
 This mutant removes the requirement to identify unfinished tasks, so the final summary may omit work that still needs to be completed. The property only checks that the final message contains `"MAXIMUM STEPS REACHED"`, not that the prompt explicitly requires a summary of remaining tasks. 
@@ -18,6 +29,12 @@ This mutant removes the requirement to identify unfinished tasks, so the final s
 `R5: adding a step limit adds exactly the plan instruction to the first request`
 
 ```diff
+diff --git a/packages/core/src/session/runner/max-steps.ts
+--- a/packages/core/src/session/runner/max-steps.ts
++++ b/packages/core/src/session/runner/max-steps.ts
+@@ -18,4 +18,4 @@
+ // R5: when an agent has a step limit, tell the model the limit up front and ask for a short
+ // numbered plan before any tool call, without waiting for approval (interview evidence C-13, C-14).
  export const stepPlanPrompt = (steps: number) =>
 -  `This agent has a limit of ${steps} steps for this task. Before your first tool call, post a short numbered plan of how you will divide the work into steps, then start immediately. Do not wait for the user to approve the plan.`
 +  `This agent has a limit of ${steps} steps for this task. Include a short numbered plan describing how you divided the work in your final response.`
@@ -31,6 +48,12 @@ This mutant changes the planning instruction so the model produces its plan afte
 `R5: adding a step limit adds exactly the plan instruction to the first request`
 
 ```diff
+diff --git a/packages/core/src/session/runner/max-steps.ts
+--- a/packages/core/src/session/runner/max-steps.ts
++++ b/packages/core/src/session/runner/max-steps.ts
+@@ -18,4 +18,4 @@
+ // R5: when an agent has a step limit, tell the model the limit up front and ask for a short
+ // numbered plan before any tool call, without waiting for approval (interview evidence C-13, C-14).
  export const stepPlanPrompt = (steps: number) =>
 -  `This agent has a limit of ${steps} steps for this task. Before your first tool call, post a short numbered plan of how you will divide the work into steps, then start immediately. Do not wait for the user to approve the plan.`
 +  `This agent has a limit of ${steps} steps for this task. Before your first tool call, post a short numbered plan of how you will divide the work into steps, then wait for the user to approve the plan.`
