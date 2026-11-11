@@ -58,7 +58,7 @@ Stryker mutated `packages/tui/src/prompt/hint.ts` and ran only `test/session/hin
 
 Stryker did not generate the exact semantic changes represented by H1–H5: replacing the supported-level message with a generic message, clearing the previous active level after invalid input, removing case normalization, accepting abbreviations as complete settings, or returning a generic confirmation without the new level. Stryker instead applied general syntactic mutations such as regular-expression edits, optional-chaining removal, and conditional-expression changes. Hand-written mutants therefore exercised feature-specific requirements that Stryker could not infer from the implementation alone.
 
-The seven survivors were all on the command parser:
+The first run had seven command-parser survivors:
 
 - Removing `.trim()` from the command input (line 19).
 - Removing the start anchor (`^`) from the `/hint` regular expression (line 19).
@@ -68,17 +68,17 @@ The seven survivors were all on the command parser:
 - Changing `if (!match)` to `if (false)`, causing non-`/hint` text to be treated as a hint command (line 20).
 - Removing optional chaining from `match[1]?.toLowerCase()`, which can throw when `/hint` has no argument (line 22).
 
-I would not have initially designed the anchor-removal and optional-chaining mutants. They are plausible implementation mistakes: an unanchored command parser can accept extra text, and removing optional chaining can crash on `/hint` with no argument. The `.trim()` and whitespace survivors also revealed that my existing properties do not exercise malformed whitespace or a missing argument.
+I would not have initially designed the anchor-removal and optional-chaining mutants. They are plausible implementation mistakes: an unanchored command parser can accept extra text, and removing optional chaining can crash on `/hint` with no argument. The `.trim()` and whitespace survivors also revealed that my initial properties did not exercise command whitespace or a missing argument. After strengthening the properties below, all seven were killed.
 
 Hand-written mutants found domain-specific failures in error guidance, state preservation, case handling, abbreviations, and confirmation text. Stryker found parser-boundary failures involving arbitrary non-command text, malformed command syntax, trailing text, and absent arguments. The approaches are complementary.
 
 ## Strengthening
 
-I do not claim any equivalent mutants, so the final mutation score with equivalent mutants excluded is the same as the score Stryker reports.
+I do not claim any equivalent mutants: every mutant produced an observable behavior change and was killed by a generated property. Therefore the final score with equivalent mutants excluded is unchanged: 100.00% (51/51).
 
 | Survivor category | Stronger property |
 |---|---|
-| Removing `.trim()` / changing `\s+` | Generate supported settings combined with repeated spaces, tabs, newlines, and trailing whitespace. Assert every malformed `/hint` command is rejected and preserves the active level. |
+| Removing `.trim()` / changing `\s+` | Strengthen R3 to generate repeated spaces, tabs, newlines, and outer whitespace around every supported setting. Assert each whitespace-normalized command has the same result as the canonical command. |
 | Removing `^` or `$` regex anchors | Generate nonempty prefixes and suffixes around otherwise valid `/hint <level>` text. Assert non-command text is not handled as a hint command, and malformed command text cannot change the level. |
 | Making the argument mandatory | Generate every active level and call `/hint` without a value. Assert it returns a safe error response and preserves the active level. |
 | Replacing `if (!match)` with `if (false)` | Generate arbitrary text that is not a `/hint` command. Assert `applyHintCommand` returns `{ handled: false }`. |
