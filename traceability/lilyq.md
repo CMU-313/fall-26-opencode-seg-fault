@@ -50,3 +50,36 @@ I did not modify the `/hint` behavior, but I refactored the code to put the `/hi
 | H3 | R3 | `src/prompt/hint.ts`: Remove `.toLowerCase()` from `const setting = match[1]?.toLowerCase()`. Valid hint levels now become case-sensitive, so `/hint Subtle` is rejected. | `R3: changing a supported setting's casing preserves its meaning` | Killed by R3, as predicted. `Counterexample: [{"setting":"subtle","casing":[false,false,false,false,true,false]}]` |
 | H4 | R5 | `src/prompt/hint.ts`: Change `isHintLevel` so it accepts any non-none prefix of a supported level. For example, `/hint sub` is incorrectly treated as `subtle`. | `R5: misspellings and abbreviations are rejected and the active setting is preserved` | Killed by R5 as expected, but also R1 and R2. R1 and R2 also kill this mutant because they use `applyHintCommand`, which relies on `isHintLevel`, which is the function that this mutant changed. The restrictions on what is allowed as a hint level are too loose now, thus the mutant is killed. | 
 | H5 | R8 | `src/prompt/hint.ts`: Replace the successful-command message `Hint level: ${setting}` with the generic `"Hint level updated"`. The command succeeds but no longer tells the user which hint level is active. | `R8: successful hint changes always provide confirmation` | Killed by R8, as expected. | 
+
+## Stryker Comparison 
+**fast-check seed:** `42`
+
+Stryker mutated `packages/tui/src/prompt/hint.ts` and ran only `test/session/hint.property.test.ts`. It generated 52 mutants: 44 were killed and 7 survived, for a mutation score of 86.27% (44/51). 
+
+Stryker did not generate the exact semantic changes represented by H1–H5: replacing the supported-level message with a generic message, clearing the previous active level after invalid input, removing case normalization, accepting abbreviations as complete settings, or returning a generic confirmation without the new level. Stryker instead applied general syntactic mutations such as regular-expression edits, optional-chaining removal, and conditional-expression changes. Hand-written mutants therefore exercised feature-specific requirements that Stryker could not infer from the implementation alone.
+
+The seven survivors were all on the command parser:
+
+- Removing `.trim()` from the command input (line 19).
+- Removing the start anchor (`^`) from the `/hint` regular expression (line 19).
+- Removing the end anchor (`$`) from the regular expression (line 19).
+- Making the hint-level argument mandatory (line 19).
+- Changing `\s+` to `\s`, so repeated whitespace is no longer accepted (line 19).
+- Changing `if (!match)` to `if (false)`, causing non-`/hint` text to be treated as a hint command (line 20).
+- Removing optional chaining from `match[1]?.toLowerCase()`, which can throw when `/hint` has no argument (line 22).
+
+I would not have initially designed the anchor-removal and optional-chaining mutants. They are plausible implementation mistakes: an unanchored command parser can accept extra text, and removing optional chaining can crash on `/hint` with no argument. The `.trim()` and whitespace survivors also revealed that my existing properties do not exercise malformed whitespace or a missing argument.
+
+Hand-written mutants found domain-specific failures in error guidance, state preservation, case handling, abbreviations, and confirmation text. Stryker found parser-boundary failures involving arbitrary non-command text, malformed command syntax, trailing text, and absent arguments. The approaches are complementary.
+
+## Strengthening
+
+I do not claim any equivalent mutants, so the final mutation score with equivalent mutants excluded is the same as the score Stryker reports.
+
+| Survivor category | Stronger property |
+|---|---|
+| Removing `.trim()` / changing `\s+` | Generate supported settings combined with repeated spaces, tabs, newlines, and trailing whitespace. Assert every malformed `/hint` command is rejected and preserves the active level. |
+| Removing `^` or `$` regex anchors | Generate nonempty prefixes and suffixes around otherwise valid `/hint <level>` text. Assert non-command text is not handled as a hint command, and malformed command text cannot change the level. |
+| Making the argument mandatory | Generate every active level and call `/hint` without a value. Assert it returns a safe error response and preserves the active level. |
+| Replacing `if (!match)` with `if (false)` | Generate arbitrary text that is not a `/hint` command. Assert `applyHintCommand` returns `{ handled: false }`. |
+| Removing optional chaining | Reuse the generated missing-argument property. It will catch the crash caused by `match[1].toLowerCase()`. |

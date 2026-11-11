@@ -2,6 +2,8 @@ import { expect, test } from "bun:test"
 import fc from "fast-check"
 import { applyHintCommand, type HintLevel, type HintSetting } from "../../../tui/src/prompt/hint"
 
+fc.configureGlobal({ seed: 42 })
+
 const supportedSettings = ["subtle", "moderate", "detailed", "none"] as const satisfies ReadonlyArray<HintSetting>
 const activeLevels = [undefined, "subtle", "moderate", "detailed"] as const satisfies ReadonlyArray<HintLevel | undefined>
 
@@ -13,6 +15,8 @@ const unsupportedLevel = fc
 const settingWithCasing = supportedSetting.chain((setting) =>
   fc.array(fc.boolean(), { minLength: setting.length, maxLength: setting.length }).map((casing) => ({ setting, casing })),
 )
+const commandWhitespace = fc.constantFrom(" ", "  ", "\t", "\n")
+const outerWhitespace = fc.constantFrom("", " ", "\t", "\n")
 
 function expectedLevel(setting: HintSetting) {
   if (setting === "none") return undefined
@@ -43,6 +47,14 @@ const misspelling = supportedSetting
     ),
   )
   .filter((value) => value.length > 0 && !isSupported(value))
+const commandBoundary = fc.oneof(
+  fc
+    .tuple(fc.stringMatching(/^[A-Za-z0-9_-]{1,16}$/), supportedSetting)
+    .map(([prefix, setting]) => `${prefix}/hint ${setting}`),
+  fc
+    .tuple(supportedSetting, fc.stringMatching(/^[A-Za-z0-9_-]{1,16}$/))
+    .map(([setting, suffix]) => `/hint ${setting} ${suffix}`),
+)
 
 // R1: When a user enters a hint level that is not one of subtle, moderate,
 // detailed, or none, the system must reject the selection and return an error
@@ -93,10 +105,10 @@ test("R2: rejected hint levels preserve the active setting", () => {
 // rather than checking only a few manually chosen spellings.
 test("R3: changing a supported setting's casing preserves its meaning", () => {
   fc.assert(
-    fc.property(settingWithCasing, ({ setting, casing }) => {
+    fc.property(settingWithCasing, commandWhitespace, outerWhitespace, ({ setting, casing }, separator, padding) => {
       const original = applyHintCommand(`/hint ${setting}`, undefined,)
 
-      const transformed = applyHintCommand(`/hint ${mixedCase(setting, casing)}`, undefined,)
+      const transformed = applyHintCommand(`${padding}/hint${separator}${mixedCase(setting, casing)}${padding}`, undefined,)
 
       expect(transformed).toEqual(original)
 
@@ -108,6 +120,27 @@ test("R3: changing a supported setting's casing preserves its meaning", () => {
         expectedLevel(setting),
       )
       expect(transformed.clearInput).toBe(true)
+    }),
+  )
+})
+
+test("text that only contains a hint-looking substring is not a hint command", () => {
+  fc.assert(
+    fc.property(activeLevel, commandBoundary, (active, input) => {
+      expect(applyHintCommand(input, active)).toEqual({ handled: false })
+    }),
+  )
+})
+
+test("a hint command without a value is rejected safely", () => {
+  fc.assert(
+    fc.property(activeLevel, (active) => {
+      expect(applyHintCommand("/hint", active)).toMatchObject({
+        handled: true,
+        clearInput: false,
+        hintLevel: active,
+        toast: { variant: "error" },
+      })
     }),
   )
 })
