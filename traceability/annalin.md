@@ -117,3 +117,84 @@ The unmodified property file passed all four tests before mutation. H5 changed w
 - Mutant run: [H5-mutant.log](../mutants/annalin/H5-mutant.log)
 
 The correct wildcard source was restored after this experiment, and all four properties passed again. H5 is a deliberate test fault, not a production fix.
+
+## Agent failure case
+
+### Transcript excerpt
+
+The property below was written by opencode (build agent, model `gpt-5.6-sol-fast`) in session `ses_e3643dfffffeTj96rLOstHP13H` on November 11, 2026. Share link: https://opncd.ai/share/OstHP13H (opencode now reports that sharing is discontinued, so the full session is also exported in [opencode-transcript.json](../mutants/annalin/opencode-transcript.json)).
+
+**Prompt:**
+
+> Write a fast-check property test for this requirement and save it as `packages/opencode/test/permission/annalin.opencode.test.ts`
+>
+> Requirement R4, Commands governed by the same effective permission pattern must receive the same permission decision. In particular, changing a deletion target from one file or folder to another must preserve denial under an effective `rm *` deny rule.
+>
+> Use Permission.fromConfig and Permission.evaluate from src/permission. Use bun:test and fast-check with { numRuns: 100, seed: 42 }. Only create the test file. Do not change any source files.
+
+**Response (opencode's text, tool calls omitted):**
+
+> I'll inspect the permission API and nearby tests, then add only the requested property test and run that test if feasible.
+>
+> The permission matcher is last-match-wins, and an existing broader property suite confirms `rm *` covers both plain and recursive deletion forms. I'll create a focused standalone R4 test with generated nonempty file/folder targets, asserting equal decisions and explicit denial.
+>
+> The test file is in place. I'm running the exact Bun test now to verify the generator and permission assertions.
+>
+> Created `packages/opencode/test/permission/annalin.opencode.test.ts`. Verification: `1 pass`, `0 fail` with 100 runs and seed 42.
+
+**Property it wrote** ([annalin.opencode.test.ts](../packages/opencode/test/permission/annalin.opencode.test.ts)):
+
+```ts
+const target = fc
+  .array(fc.stringMatching(/^[a-zA-Z0-9._-]+$/), { minLength: 1, maxLength: 4 })
+  .map((parts) => parts.join("/"))
+
+test("R4: changing a deletion target preserves denial under an effective rm * rule", () => {
+  fc.assert(
+    fc.property(target, target, fc.boolean(), fc.boolean(), (first, second, firstFolder, secondFolder) => {
+      const ruleset = Permission.fromConfig({ bash: { "*": "allow", "rm *": "deny" } })
+      const firstCommand = firstFolder ? `rm -r ${first}/` : `rm ${first}`
+      const secondCommand = secondFolder ? `rm -r ${second}/` : `rm ${second}`
+      const firstDecision = Permission.evaluate("bash", firstCommand, ruleset)
+      const secondDecision = Permission.evaluate("bash", secondCommand, ruleset)
+
+      expect(firstDecision.action).toBe("deny")
+      expect(secondDecision.action).toBe(firstDecision.action)
+    }),
+    { numRuns: 100, seed: 42 },
+  )
+})
+```
+
+### The mutant it let survive
+
+Stryker mutant #9 in `packages/core/src/util/wildcard.ts` ([S9-dotall.patch](../mutants/annalin/S9-dotall.patch)) removes the regex `s` (dot-all) flag on non-Windows platforms:
+
+```diff
+-  return new RegExp("^" + escaped + "$", process.platform === "win32" ? "si" : "s").test(normalized)
++  return new RegExp("^" + escaped + "$", process.platform === "win32" ? "si" : "").test(normalized)
+```
+
+Without the flag, `*` no longer matches a line break. A deletion target whose name contains a newline, such as `rm` followed by `\na`, stops matching `rm *` and falls through to the `"*": "allow"` rule. The deletion is allowed instead of denied, which violates R4. The opencode property still passed with this mutant applied ([opencode-S9.log](../mutants/annalin/opencode-S9.log)). It also passed against H1 to H4 and killed only H5.
+
+### Why the property was too weak
+
+The generator never reaches the bug. Every name segment comes from `/^[a-zA-Z0-9._-]+$/`, so the property never produces a space, line break, tab, Unicode letter, or regex symbol, even though real filenames can contain all of these. Mutant #9 only changes behavior for names with line breaks, so all 100 generated cases behave the same under the mutant and the original code. opencode read `annalin.property.test.ts`, whose generator already includes spaces, Unicode, and regex symbols, but it still chose the narrow character class. It then reported "1 pass, 0 fail" as verification, although a passing run only shows the property agrees with the current code, not that it can detect a fault.
+
+### Strengthened version and evidence
+
+The strengthened property ([annalin.opencode-strengthened.test.ts](../packages/opencode/test/permission/annalin.opencode-strengthened.test.ts)) keeps opencode's oracle and changes only the generator, so each segment may contain spaces, newlines, tabs, Unicode, and regex symbols:
+
+```ts
+const segment = fc
+  .array(fc.constantFrom("a", "Z", "0", ".", "_", "-", " ", "\n", "\t", "é", "中", "[", "+", "$", "*", "?"), {
+    minLength: 1,
+    maxLength: 12,
+  })
+  .map((chars) => chars.join(""))
+const target = fc.array(segment, { minLength: 1, maxLength: 4 }).map((parts) => parts.join("/"))
+```
+
+- On the original code it passes: 1 pass, 0 fail ([strengthened-baseline.log](../mutants/annalin/strengthened-baseline.log)).
+- With mutant #9 applied it fails: 0 pass, 1 fail, counterexample `["\na","a",false,false]`, meaning `rm` followed by a name starting with a newline was not denied ([strengthened-S9.log](../mutants/annalin/strengthened-S9.log)).
+- It still kills H5.

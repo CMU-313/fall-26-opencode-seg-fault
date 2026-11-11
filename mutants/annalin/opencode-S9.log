@@ -1,0 +1,9 @@
+bun test v1.4.2 (744846f84)
+
+test/permission/annalin.opencode.test.ts:
+(pass) R4: changing a deletion target preserves denial under an effective rm * rule [5.17ms]
+
+ 1 pass
+ 0 fail
+ 200 expect() calls
+Ran 1 test across 1 file. [1.96s]
