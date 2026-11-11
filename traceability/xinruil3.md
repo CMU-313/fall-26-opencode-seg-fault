@@ -30,88 +30,113 @@ After the P5 strengthening, all seven properties (R1 to R5 and R7, two of them f
 
 ## Hand-written mutants
 
-Each mutant is a patch in [`mutants/xinruil3/`](../mutants/xinruil3/) against the PR #19 code. To run it: `git apply mutants/xinruil3/H1.patch`, then `(cd packages/opencode && bun test test/session/learning-mode.property.test.ts)`, then `git apply -R mutants/xinruil3/H1.patch` to revert.
+The six patches are in [`mutants/xinruil3/`](../mutants/xinruil3/) and were written against the PR #19 code. Apply and test one patch at a time:
 
-| ID | Requirement targeted | Change | Predicted killer | Actual result |
+1. From the repository root, apply the patch: `git apply mutants/xinruil3/H1.patch`.
+2. From `packages/opencode`, run `bun test test/session/learning-mode.property.test.ts`.
+3. Return to the repository root and revert the patch: `git apply -R mutants/xinruil3/H1.patch`.
+
+Repeat these steps for H2 through H6, starting each time with the previous patch reverted.
+
+The table below describes the properties **before the H2 and H6 strengthening**. A mutant survived if the tests passed with its patch applied. The changes that later killed H2 and H6 are described in **Strengthening**.
+
+| ID | Requirement targeted | Code change and resulting bug | Expected result before strengthening | Observed result |
 |---|---|---|---|---|
-| H1 | R4 | `packages/core/src/flag/flag.ts:75`: `.trim()` is removed before `.toLowerCase()`, so a padded value such as `" TRUE "` is no longer recognized and the config file decides instead. This is the bug found in P4, reintroduced as a regression. | R4 ("a one-process override returns to unchanged file configuration"): its override generator pads recognized values with spaces, tabs and newlines, and the fixed example `" TRUE "` runs every time, so the overridden request will lack the learning-mode prompt. R7 should also kill it: its recognized negative controls `"\tFaLsE "` and `" TrUe\r\n"` would now log a warning. | Killed by R4 and R7, as predicted. |
-| H2 | R4 | `packages/core/src/flag/flag.ts:77`: the numeric alias for false is dropped (`value === "false" \|\| value === "0"` becomes `value === "false"`), so `OPENCODE_LEARNING_MODE=0` is treated as unrecognized while `1` still works. | R4, but only sometimes. `"0"` is generated only when the override is false and the word draw picks `"0"` (about 1 in 8 generated cases), and neither fixed example uses it. R4 runs 8 cases and its 2 fixed examples count toward them, so only 6 are random; the chance that none of them is `"0"` is (7/8)^6 ≈ 45%, so the result depends on the seed. No other property generates `"0"`. | Survived, both in a first run with a random seed and in a re-run with seed 42. In both runs none of R4's 6 random cases was `"0"` with a false override, so the missing alias was never exercised. This matches the prediction that R4 catches it only when `"0"` happens to be generated. After strengthening, the new parser property kills it (see Strengthening). |
-| H3 | R3 | `packages/opencode/src/config/config.ts:587`: `Flag.OPENCODE_LEARNING_MODE` becomes `Flag.OPENCODE_LEARNING_MODE ?? global.learning_mode`. This is a plausible reading of "the global setting supplies the default", but it makes the global value beat the project value. | R3 ("conflicting configs agree with the project-setting oracle"): it checks both conflict directions in every run, so it should fail every time. R4 should also kill it, because its run without the override has global and project disagreeing. R2 should not kill it, because R2 never sets both files at once. | Killed by R3 and R4, as predicted. R2 passed, so R2 alone does not detect a global-over-project precedence bug. |
-| H4 | R2 | `packages/opencode/src/session/prompt.ts:1281`: `cfg.learning_mode ? …` becomes `cfg.learning_mode !== false ? …`, so an unset setting counts as on. | R2 ("moving the setting from project to global changes only its scope"): project B has no setting in case (1), and neither file sets it in case (3), so those requests will contain the prompt. R7 should also kill it through its fixed example whose config file has no `learning_mode`. R1, R3 and R5 always set an explicit boolean, so they cannot. | Killed by R2 and R7, as predicted. |
-| H5 | R7 | `packages/opencode/src/config/config.ts:592`: `Effect.logWarning` becomes `Effect.logDebug`. The default log level is INFO, so the warning is silently dropped, even with `--print-logs`. | R7 ("invalid overrides warn once and preserve the configured behavior"): it requires exactly one WARN line naming `OPENCODE_LEARNING_MODE`, and with this mutant there are none. No other property reads the logs. | Killed by R7 only, as predicted. |
-| H6 | R1 | `packages/opencode/src/session/prompt.ts:1276`: the system prompt is refactored into two branches (learning mode on and off), and the learning-mode branch forgets `mcpInstructions`. Everything else is the same, so it looks like a harmless refactor. | Survives. R1 compares the whole request with learning mode on and off, so in principle it covers this. But the fixture configures no MCP servers, so `mcpInstructions` is `undefined` in both requests and both branches build the same prompt. The generator never reaches the case this mutant breaks. | Survived, as predicted. With no MCP server in the fixture, `mcpInstructions` is `undefined` in both requests, so R1 sees identical prompts. After strengthening, R1 kills it (see Strengthening). |
+| H1 | R4 | In `packages/core/src/flag/flag.ts:75`, remove `.trim()` before `.toLowerCase()`. A padded value such as `" TRUE "` is then rejected, so the config-file setting applies instead of the override. This reintroduces the bug found in P4. | R4 should fail because its fixed example `" TRUE "` must apply an override. R7 should also fail because its recognized inputs `"\tFaLsE "` and `" TrUe\r\n"` would incorrectly produce warnings. | Killed by R4 and R7. |
+| H2 | R4 | In `packages/core/src/flag/flag.ts:77`, change `value === "false" \|\| value === "0"` to `value === "false"`. The parser then rejects `0`, although the alias `1` still works. | R4 should fail only if its random cases include a spelling of `0`. Neither fixed example covers that alias, and no other property in this version generates it. | Survived both the initial run with a random seed and the rerun with seed 42. Neither run generated the missing alias. |
+| H3 | R3 | In `packages/opencode/src/config/config.ts:587`, replace `Flag.OPENCODE_LEARNING_MODE` with `Flag.OPENCODE_LEARNING_MODE ?? global.learning_mode`. When the environment variable is absent, the global value is applied at the override step and can overwrite the project value. | R3 should fail because it checks both directions of a global/project conflict. R4 should also fail when it removes the environment override and expects the project setting to take effect. R2 should pass because it never gives the two files conflicting settings. | Killed by R3 and R4. R2 passed. |
+| H4 | R2 | In `packages/opencode/src/session/prompt.ts:1281`, change `cfg.learning_mode ? …` to `cfg.learning_mode !== false ? …`. An unset value now enables learning mode because `undefined !== false` is true. | R2 should fail for projects where neither file enables learning mode. R7 should fail on its fixed example with no `learning_mode` setting. R1, R3 and R5 use explicit booleans, so their inputs do not expose this change. | Killed by R2 and R7. |
+| H5 | R7 | In `packages/opencode/src/config/config.ts:592`, replace `Effect.logWarning` with `Effect.logDebug`. At the default INFO log level, the message is filtered out, including when `--print-logs` is used. | R7 should fail because it expects exactly one WARN entry naming `OPENCODE_LEARNING_MODE`. The other properties do not inspect the logs. | Killed by R7 only. |
+| H6 | R1 | In `packages/opencode/src/session/prompt.ts:1276`, split construction of the system prompt into learning-mode-on and learning-mode-off branches, then omit `mcpInstructions` from the on branch. This can remove instructions unrelated to learning mode. | It should survive. The fixture has no MCP server, so there are no MCP instructions for the mutant to remove. | Survived. After removing the expected learning-mode block, R1 found no difference between the requests. |
 
+**Why H2 could survive.** R4 runs eight cases in total. Its two fixed examples count toward that total, leaving six random cases. Under the original generator, each random case has about a 1-in-8 chance of choosing the false alias `0`. The chance of missing that alias in all six cases is therefore `(7/8)^6 ≈ 45%`. The observed survivors are consistent with this gap in input coverage.
+
+**Why H6 could survive.** R1 compares requests with learning mode on and off, allowing only the learning-mode instruction block to differ. That comparison can detect missing MCP instructions, but only if the fixture supplies some. In the original fixture, `mcpInstructions` was `undefined` in both requests. Omitting it from one branch therefore made no observable difference. The fixture needed an MCP server that actually supplied instructions.
 
 ## Stryker comparison
 
-**Setup.** Config: [`packages/opencode/stryker.xinruil3.config.json`](../packages/opencode/stryker.xinruil3.config.json). It uses the command runner with `bun test --bail test/session/learning-mode.property.test.ts`, so only my property file runs. It mutates only the lines my requirements cover: `src/config/config.ts:587-596` (the environment override and its warning) and `src/session/prompt.ts:1281` (adding the learning-mode prompt). The fast-check seed is **42**, passed as `seed: 42` to every `fc.assert`. Report: [`mutants/xinruil3/mutation.html`](../mutants/xinruil3/mutation.html).
+**Setup.** The configuration is [`packages/opencode/stryker.xinruil3.config.json`](../packages/opencode/stryker.xinruil3.config.json). It uses the command runner with `bun test --bail test/session/learning-mode.property.test.ts`, so the run executes only my property file. Every `fc.assert` uses `seed: 42`.
 
-**Score (first run, before strengthening).** 16 mutants: 16 killed, 0 survived, 0 timed out, 0 without coverage. Stryker's score is **100.00%**. I claim no equivalent mutants (every mutant was killed, so none can be equivalent), so the score with equivalent mutants excluded is also **100%**.
+The mutation scope contains two source ranges:
 
-The table lists every Stryker mutant. Because of `--bail`, bun stops at the first failing test and runs the properties in file order (R1, R2, R3, R4, R5, R7). So "first property to fail" is the earliest property that kills the mutant, and every property before it passed. For example, "R7" means R1 to R5 all missed that mutant.
+- `src/config/config.ts:587-596`: applying the environment override and logging an invalid-value warning.
+- `src/session/prompt.ts:1281`: including or omitting the learning-mode prompt.
+
+The report is [`mutants/xinruil3/mutation.html`](../mutants/xinruil3/mutation.html).
+
+**Results before strengthening.** Stryker generated 16 mutants. All 16 were killed; none survived, timed out, or lacked coverage. The mutation score was **100.00%**. I excluded no mutants as equivalent, so the score after equivalent-mutant exclusions was also **100%**.
+
+With `--bail`, the test run stops at the first failing property. The properties run in file order: R1, R2, R3, R4, R5, then R7. The last column below identifies the first property that failed for each mutant. Earlier properties passed in that run; properties after the first failure were not evaluated. For example, an R7 entry means R1 through R5 passed with that mutant applied.
 
 | # | Location | Mutator | Change | First property to fail |
 |---|---|---|---|---|
 | 0 | config.ts:588 | ConditionalExpression | `if (learningMode !== undefined)` becomes `if (true)` | R1 |
 | 1 | config.ts:588 | ConditionalExpression | `if (learningMode !== undefined)` becomes `if (false)` | R4 |
 | 2 | config.ts:588 | EqualityOperator | `!==` becomes `===` | R1 |
-| 3 | config.ts:588-590 | BlockStatement | the override assignment block is emptied | R4 |
-| 4 | config.ts:591 | ConditionalExpression | the whole warning condition becomes `true` | R7 |
-| 5 | config.ts:591 | ConditionalExpression | the whole warning condition becomes `false` | R7 |
-| 6 | config.ts:591 | LogicalOperator | `&&` becomes `\|\|` | R7 |
-| 7 | config.ts:591 | ConditionalExpression | `learningMode === undefined` becomes `true` | R7 |
-| 8 | config.ts:591 | EqualityOperator | `learningMode === undefined` becomes `!== undefined` | R7 |
-| 9 | config.ts:591 | MethodExpression | `.trim()` is removed from the warning condition | R7 |
-| 10 | config.ts:591 | OptionalChaining | `?.trim()` becomes `.trim()` | R1 |
-| 11 | config.ts:591-596 | BlockStatement | the warning block is emptied | R7 |
-| 12 | config.ts:593 | StringLiteral | the warning message becomes `""` | R7 |
-| 13 | config.ts:594 | ObjectLiteral | `{ value: ... }` becomes `{}` | R7 |
-| 14 | prompt.ts:1281 | ArrayDeclaration | `[PROMPT_LEARNING_MODE]` becomes `[]` | R1 |
-| 15 | prompt.ts:1281 | ArrayDeclaration | the off branch `[]` becomes `["Stryker was here"]` | R1 |
+| 3 | config.ts:588-590 | BlockStatement | The override assignment block is emptied. | R4 |
+| 4 | config.ts:591 | ConditionalExpression | The entire warning condition becomes `true`. | R7 |
+| 5 | config.ts:591 | ConditionalExpression | The entire warning condition becomes `false`. | R7 |
+| 6 | config.ts:591 | LogicalOperator | `&&` becomes `\|\|`. | R7 |
+| 7 | config.ts:591 | ConditionalExpression | `learningMode === undefined` becomes `true`. | R7 |
+| 8 | config.ts:591 | EqualityOperator | `learningMode === undefined` becomes `learningMode !== undefined`. | R7 |
+| 9 | config.ts:591 | MethodExpression | `.trim()` is removed from the warning condition. | R7 |
+| 10 | config.ts:591 | OptionalChaining | `?.trim()` becomes `.trim()`. | R1 |
+| 11 | config.ts:591-596 | BlockStatement | The warning block is emptied. | R7 |
+| 12 | config.ts:593 | StringLiteral | The warning message becomes `""`. | R7 |
+| 13 | config.ts:594 | ObjectLiteral | `{ value: ... }` becomes `{}`. | R7 |
+| 14 | prompt.ts:1281 | ArrayDeclaration | `[PROMPT_LEARNING_MODE]` becomes `[]`. | R1 |
+| 15 | prompt.ts:1281 | ArrayDeclaration | The off branch `[]` becomes `["Stryker was here"]`. | R1 |
 
 ### Which hand-written mutants did Stryker never generate, and why?
 
-None of H1 to H6 appear in the report. The reasons differ:
+The report contains none of H1 through H6. Some were outside the configured source ranges; others required changes that the mutation operators used in this run did not produce.
 
-- **H1 and H2** are in `packages/core/src/flag/flag.ts`. Stryker runs inside `packages/opencode` and can only mutate files in that package, so the flag parser is out of its reach. Stryker does have operators for both changes. MethodExpression removes `.trim()`, which is H1. ConditionalExpression turns `value === "0"` inside `||` into `false`, which behaves exactly like H2. So both would have been generated if the parser were in scope. Stryker did make the H1 kind of change in `config.ts`: mutant 9 removes `.trim()` from the warning condition.
-- **H3** adds new code (`?? global.learning_mode`). Stryker only replaces or deletes code that already exists and never adds an operand. Line 587 (`const learningMode = Flag.OPENCODE_LEARNING_MODE`) has no operator at all, so Stryker made no mutant on it.
-- **H4** changes the condition of a `? :` expression. In Stryker 10.1.1 the ConditionalExpression mutator does not touch ternary conditions (that case is commented out in its source). `cfg.learning_mode` is a plain property read, not a comparison, so EqualityOperator does not apply either. Line 1281 got only the two ArrayDeclaration mutants.
-- **H5** swaps `logWarning` for `logDebug`. MethodExpression only swaps a fixed list of built-in methods, such as `trim`, `toLowerCase`/`toUpperCase`, `startsWith`/`endsWith` and `min`/`max`, and Effect's logging methods are not on it. Instead, Stryker deleted the warning (11), emptied its message (12) or emptied its data (13).
-- **H6** is a two-branch refactor of the system array on line 1279, outside my mutate range. Even inside the range, ArrayDeclaration replaces a whole array with `[]`. It never drops one element or rewrites code into branches.
+- **H1 and H2:** Both change the parser in `packages/core/src/flag/flag.ts`, which was outside this run's mutation scope. Their changes can be expressed using mutation operators: removing `.trim()` reproduces H1, and replacing `value === "0"` with `false` inside the `||` expression has the same effect as H2. Stryker generated a similar trim-removal mutant in a different place: #9 changes the warning condition in `config.ts`.
+- **H3:** This mutant adds the fallback `?? global.learning_mode` to `const learningMode = Flag.OPENCODE_LEARNING_MODE`. The operators used in this run did not introduce that fallback, and the report contains no mutant for line 587.
+- **H4:** This mutant changes a ternary condition from `cfg.learning_mode` to `cfg.learning_mode !== false`. The ConditionalExpression mutator in the version used, Stryker 10.1.1, did not mutate this ternary condition. The original condition is also a property read, so it contains no equality operator for EqualityOperator to replace. The report contains only two ArrayDeclaration mutations on this line.
+- **H5:** This mutant changes the logging method from `logWarning` to `logDebug`. MethodExpression supports particular built-in methods; it did not substitute Effect's logging methods. Stryker instead generated mutants that removed the warning block (#11), emptied its message (#12), or removed its data (#13).
+- **H6:** This mutant changes construction of the system array around line 1279, outside the configured range. It also requires a specific structural change: introduce two branches and omit MCP instructions from only the learning-mode-on branch. The array mutations in this run did not reproduce that behavior.
 
 ### Which Stryker survivors would I never have thought of? Are any plausible bugs?
 
-No Stryker mutant survived with seed 42, so there are no survivors to discuss. Several killed mutants were ones I would not have written myself:
+No Stryker mutant survived with seed 42. However, several of the killed mutants tested failure modes I had not included in my hand-written patches:
 
-- **10** (`?.trim()` becomes `.trim()`): when the variable is unset, loading the config throws and the server never starts. This is a plausible bug for a developer who only ever tests with the variable set. R1 caught it because it runs without the variable.
-- **15** (`"Stryker was here"` in the off branch): I only thought about the on branch going wrong. A realistic version is a developer adding a "learning mode is off" note to the off branch. R1 caught it because it compares the whole request.
-- **12 and 13** (empty warning message, or warning data without the value): a plausible bug is logging the warning without the bad value. R7 caught both because it checks for the value and for the accepted words.
-- **4, 6, 7, 8 and 9** each make the warning condition fire too often. R7 kills them only because of its negative controls: a recognized padded value and a blank value must not warn. 6 (`&&` to `||`) and 9 (dropping `.trim()`) are plausible slips. 9 is the same kind of bug I found in P4.
+- **#10, removing optional chaining:** Changing `?.trim()` to `.trim()` makes config loading throw when the environment variable is absent. A developer testing only with the variable set could miss this. R1 caught it because its server starts without the variable.
+- **#15, adding text to the off branch:** I had focused on mistakes in the learning-mode-on branch. This mutant changes the system prompt when learning mode is off. A realistic version would add an unnecessary "learning mode is off" instruction. R1 caught the extra text when it compared the requests.
+- **#12 and #13, removing warning content:** #12 removes the warning message, including the required explanatory text. #13 removes the data containing the invalid value. R7 checks the required warning contents, so it caught both.
+- **#4, #6, #7 and #9, warning for inputs that should be accepted or ignored:** These mutants expose the need for negative controls: recognized values and blank values must not produce an invalid-value warning. Changing `&&` to `||` (#6) or forgetting `.trim()` (#9) is a plausible implementation mistake. #9 resembles the whitespace-handling bug found in P4.
+- **#8, reversing the parsed-value check:** This mutant can warn for recognized values and omit warnings for invalid values. The invalid-value cases can therefore kill it even without negative controls.
 
 ### What does each approach find that the other doesn't?
 
-- **Stryker** is systematic. It tried every operator in the covered lines, including ones I never targeted: a crash when the variable is unset, the contents of the log line, and each part of the warning condition. It also showed that every negative control in R7 is needed. Its limits: it only makes small syntactic changes, never adds code, and only sees the files and lines I give it. A 100% score here covers 16 mutants on 11 lines, not the whole feature.
-- **Hand-written mutants** come from the requirements, so they test meaning: which setting wins (H3), the default when nothing is set (H4), the log level (H5), the parser in another package (H1, H2), and a refactor that drops an unrelated input (H6). They found two real gaps while Stryker reported 100%. H2 survived because 8 server-level runs rarely draw `"0"`. H6 survived because the fixture never configures an MCP server.
+**Stryker** applied its mutation operators to the selected source expressions and generated 16 changes. These included a startup crash, missing warning content, and changes to individual parts of the warning condition. The results show that R7's negative controls detect several cases where warnings occur too often. The reported **100%** applies to those 16 mutants in the 11 selected source lines; it does not establish complete coverage of the feature.
+
+**The hand-written mutants** targeted specific requirement failures: incorrect precedence (H3), an incorrect default (H4), the wrong log level (H5), parser errors in another package (H1 and H2), and lost MCP instructions (H6). They exposed two gaps despite the Stryker score. H2 survived because the six random R4 cases missed `0`, and neither fixed example covered it. H6 survived because the fixture supplied no MCP instructions.
 
 ## Strengthening
 
-| Mutant | What I changed | Result after the change |
+I strengthened the properties to cover the two surviving hand-written mutants.
+
+| Mutant | Change to the properties | Result |
 |---|---|---|
-| H2 | New property **"R4: every override spelling parses to the value it was built from"** (kind: model/oracle, `learning-mode.property.test.ts:273`). It reads `Flag.OPENCODE_LEARNING_MODE` in-process, so it can afford 200 cases. It reuses the `override` and `invalid` generators and adds blank values. Recognized values are weighted 4:1:1, so each case has a 1 in 12 chance of being `"0"`. | Killed. The full file with H2 applied fails only on the new parser property; the server-level R4 still passes, so it still never draws `"0"`. In an isolated check the shrunk counterexample was `{"enabled":false,"value":"0"}`. |
-| H6 | R1 now draws an optional MCP server that sends instructions (new fixture `test/session/learning-mode.mcp-server.ts`, and `Scenario.mcp` in the fixture config). It also checks that the instructions really appear in both requests, so a case cannot pass by having no MCP block at all. | Killed by R1 only. With H6 applied, the learning-mode request is missing the MCP instructions, and R1 fails (it now configures an MCP server in most cases). |
+| H2 | Added **"R4: every override spelling parses to the value it was built from"**, a model/oracle property at `learning-mode.property.test.ts:273`. It reads `Flag.OPENCODE_LEARNING_MODE` in the test process, avoiding the cost of starting a server for every case. This allows 200 cases. It reuses the `override` and `invalid` generators and includes blank inputs. | With H2 applied, the new parser property failed. The original server-level R4 property still passed in this run. An isolated check shrank the failing input to `{"enabled":false,"value":"0"}`. |
+| H6 | Extended R1's generator to optionally configure an MCP server that supplies instructions, using `test/session/learning-mode.mcp-server.ts` and `Scenario.mcp`. When the server is selected, R1 checks that its instructions appear in both requests before comparing them. This prevents the case from passing because both requests lack MCP instructions. | H6 was killed by R1 only. The enabled request omitted the MCP instructions, while the disabled request retained them. The generator includes an MCP server in most cases. |
 
-Equivalent mutants: none claimed.
+The new R4 parser property mixes recognized, invalid, and blank inputs with weights of 4:1:1. Under this generator, each case has a 1-in-12 chance of choosing a spelling of `0`.
 
-Baseline after strengthening: all 7 properties pass (`bun test test/session/learning-mode.property.test.ts`, 208 s).
+**Results after the H2 and H6 strengthening, before the red-team changes:**
 
-**Final score (after strengthening, seed 42).** Stryker re-run: 16 / 16 killed, **100.00%**. Excluding equivalent mutants (none): **100%**. Hand-written mutants: **6 / 6 killed** (H1, H3, H4 and H5 were already killed, and H2 and H6 are now killed too).
-
+- Baseline: all seven properties passed with `bun test test/session/learning-mode.property.test.ts` in 208 seconds. These are R1, R2, R3, two R4 properties, R5, and R7.
+- Stryker rerun with seed 42: **16 of 16 killed, 100.00%**. No mutants were excluded as equivalent, so the adjusted score was also **100%**.
+- Hand-written mutants: **6 of 6 killed**. H1, H3, H4 and H5 were already detected; the new cases detected H2 and H6.
 
 ## Agent failure case
 
-None of my P4 properties came from opencode, so I asked opencode (running from this repository with `bun dev`, Build agent, model GPT-5.6 Luna) to write a new property for R7. The session took about four and a half minutes (8:36 to 8:40 AM on 11/9).
+The P4 properties were written with help from Codex and Claude, rather than opencode. For this experiment, I asked opencode to write a separate R7 property. I ran it from this repository with `bun dev`, using the Build agent and model GPT-5.6 Luna. The session took about four and a half minutes, around 8:36–8:40 AM on November 9.
 
-**Transcript.** Share link: https://opncd.ai/share/TzMvC14S. Prompt:
+**Transcript:** [shared opencode session](https://opncd.ai/share/TzMvC14S).
+
+I gave it this prompt:
 
 > Write one fast-check property test for this requirement of the learning-mode feature, in a new file packages/opencode/test/session/learning-mode.opencode.property.test.ts:
 >
@@ -119,78 +144,102 @@ None of my P4 properties came from opencode, so I asked opencode (running from t
 >
 > Use the helpers in packages/opencode/test/session/learning-mode.fixture.ts (withLearningMode, config, fixture.start(value), fixture.send, and server.stop(), which returns the server logs). Write the property yourself: do not read or copy packages/opencode/test/session/learning-mode.property.test.ts. Use fc.assert with { seed: 42, numRuns: 4 }, because every case starts real opencode servers. Do not change any other file. When you are done, run only your new file from packages/opencode: bun test test/session/learning-mode.opencode.property.test.ts
 
-I told it not to read my own property file, so that it would design the property itself instead of copying my R7.
+The instruction not to open my property file was intended to make opencode design its own test. It followed that instruction.
 
-Response (excerpts from `/export`, tool calls omitted). After reading the fixture, it said:
+The following excerpts are from `/export`, with tool calls omitted. After reading the fixture, opencode said:
 
 > The fixture starts real isolated servers and exposes the exact config path, prompt sender, and startup logs needed for this requirement. I'm checking the production warning shape and learning-mode observable before writing the property so assertions stay behavioral rather than implementation-specific.
 
-It then read `config.ts` lines 570 to 607 and `learning-mode.txt`, and planned the property:
+It then read `config.ts` lines 570–607 and `learning-mode.txt` and described its plan:
 
 > I'll add one property using safe generated non-empty invalid values and both boolean config-file settings. Each case will start one server, send one real prompt to prove the server remains functional and preserves the file setting, then inspect stopped-server logs for exactly one warning containing the required details.
 
-Its first run failed because Bun's default 5-second test timeout expired:
+The first test run exceeded Bun's default five-second timeout:
 
 > The requested test command ran, but Bun's per-test default timeout (5 seconds) expired while the real server cases were still running. I'm adjusting only the new test's timeout, then rerunning the same command; no production or fixture files will change.
 
-The second run passed (`1 pass, 0 fail, 40 expect() calls`, 9.86 s), and it finished with "Added `packages/opencode/test/session/learning-mode.opencode.property.test.ts` ... Result: 1 pass, 0 failures."
+After increasing the timeout, the second run passed: `1 pass, 0 fail, 40 expect() calls` in 9.86 seconds. Its final response reported "Added `packages/opencode/test/session/learning-mode.opencode.property.test.ts` ... Result: 1 pass, 0 failures."
 
-Two things in the transcript explain the result below. Its plan only ever mentions "non-empty invalid values", so it never considered the half of R7 that says which values must not warn. And although it said it wanted assertions that are "behavioral rather than implementation-specific", it copied the exact warning string from `config.ts` into its oracle. It did follow my instruction not to open my property file.
+**What the original property checked.** The property is in commit `03e6d3e`, in `learning-mode.opencode.property.test.ts`. It generates non-empty invalid strings from letters, spaces, and `_-+.`, excluding recognized values. For each case, it checks that the server remains usable, the request follows the config-file setting, and the logs contain exactly one warning with the variable name, received value, and accepted values.
 
-The property it wrote is in commit `03e6d3e` (`learning-mode.opencode.property.test.ts`, before strengthening). It generates random strings of letters, spaces and `_-+.`, filters out the recognized words, and checks that the log contains the warning exactly once, the value, the variable name and the accepted values, and that the request follows the config file.
+My prompt explicitly described the invalid-value behavior, but it did not include the no-warning acceptance criteria from the full requirements. The generated property covered invalid inputs and omitted recognized values, blank values, and an unset variable. That omission reflects a gap in both the prompt I supplied and the coverage I accepted.
 
-**Mutants it let survive.** It passed with H1, H2, H3, H4 and H6 applied, and killed only H5. The two that matter for R7 are:
+The property also copied the exact warning string from `config.ts` into an assertion. This ties part of the test to the implementation's current wording, even though the requirement specifies the information the warning must contain.
 
-- **H1** (`flag.ts` stops trimming): `" TRUE "` is no longer recognized, so opencode warns about a value R7 says is valid.
-- **H2** (`flag.ts` drops the `"0"` alias): `OPENCODE_LEARNING_MODE=0` now warns and is ignored.
+**Hand-written mutant results.** Tested separately, H1, H2, H3, H4 and H6 survived; only H5 was killed. H1 and H2 expose the missing warning checks:
 
-H3, H4 and H6 break other requirements (R3, R2 and R1), so this property is not expected to catch them.
+- **H1:** Without `.trim()`, the valid padded value `" TRUE "` is rejected and produces a warning.
+- **H2:** Without the `0` alias, `OPENCODE_LEARNING_MODE=0` is rejected and produces a warning.
 
-Stryker with the same seed scored the property **50%** (7 killed, 1 timed out, 8 survived; report: [`mutants/xinruil3/agent-before.html`](../mutants/xinruil3/agent-before.html)). The survivors in R7's code were the warning condition replaced by `true` (#4), `&&` changed to `||` (#6), `learningMode === undefined` replaced by `true` (#7), `.trim()` removed (#9) and `?.trim()` changed to `.trim()` (#10). The override being ignored (#1, #3) and the text added to the off branch (#15) also survived.
+H3, H4 and H6 target precedence, the default value, and preservation of unrelated instructions. Those correspond to R3, R2 and R1, respectively. This R7 property was not designed to cover all three.
 
-**Why the property was too weak.** Its generator never reaches the bug. R7 has two halves: unrecognized values must warn, and recognized values, blank values and an unset variable must not. The generator filters out every recognized value and never leaves the variable blank or unset. So every mutant that makes the warning fire too often, or breaks a valid spelling, behaves exactly like the original on every input it can produce. Two of its assertions are also weaker than they look. `toContain("OPENCODE_LEARNING_MODE")` is already implied by the exact warning text it checks first. `toContain(value)` can pass by coincidence when a short value appears elsewhere in the logs.
+**Stryker results before strengthening.** With seed 42, the property had a reported score of **50%**: 7 mutants were killed, 1 timed out, and 8 survived. The report is [`mutants/xinruil3/agent-before.html`](../mutants/xinruil3/agent-before.html).
 
-**Strengthened version.** I kept every original assertion and added negative controls to the same property (commit `886933a`):
+Using the mutant IDs from the earlier table, the survivors were:
 
-- Every case starts a server for each of the four recognized words (`true`, `1`, `false`, `0`) with generated padding and letter case. Each must apply its own value and log no warning. Checking all four words in every case means the numeric aliases are always tested and do not depend on the seed.
-- Every case also starts a server with a blank value and one with the variable unset. Both must keep the config-file setting and log no warning.
+- **#4, #6, #7 and #9:** Changes that can produce warnings for inputs outside the invalid-value category.
+- **#10:** Removing optional chaining, which makes startup fail when the variable is absent.
+- **#1 and #3:** Ignoring the environment override.
+- **#15:** Adding text to the learning-mode-off branch.
 
-**Evidence.** All with seed 42.
+**Why these cases escaped.** The generator only supplied invalid values. It never supplied a recognized override, a blank value, or an absent variable. As a result, it could not expose failures that depended on those inputs. For example, ignoring an override makes no difference when the supplied value is invalid and should already fall back to the config file.
 
-| | Original (opencode) | Strengthened |
+Two assertions also offered less protection than they appeared to. Checking `toContain("OPENCODE_LEARNING_MODE")` added nothing once the test had already matched an exact warning string containing that name. Checking `toContain(value)` against the logs could pass by coincidence if a short generated value appeared elsewhere. The missing input categories were the main coverage gap; these assertion issues did not explain every survivor.
+
+**Strengthening the agent-written property.** In commit `886933a`, I kept the original assertions and added cases that must produce no invalid-value warning:
+
+- Every generated case now tests all four recognized spellings: `true`, `1`, `false`, and `0`. Padding and letter case are generated. Each spelling must apply the corresponding boolean override and produce no warning. Because all four are tested in every case, coverage of the numeric aliases does not depend on the seed.
+- Every case also starts one server with a blank value and another with the variable absent. Both must use the config-file setting and produce no warning.
+
+**Results with seed 42:**
+
+| Check | Original opencode property | Strengthened property |
 |---|---|---|
-| Baseline | passes (9.9 s, 40 assertions) | passes (55 s, 208 assertions) |
-| H1 | survived | **killed** |
-| H2 | survived | **killed** |
-| H5 | killed | killed |
-| H3, H4, H6 (other requirements) | survived | survived |
-| Stryker | 50.00% (7 killed, 1 timed out, 8 survived) | **93.75%** (14 killed, 1 timed out, 1 survived) |
-| Stryker on `config.ts` (R7's code) | 50.00% | **100.00%** |
+| Baseline | Passed: 9.9 seconds, 40 assertions. | Passed: 55 seconds, 208 assertions. |
+| H1 | Survived. | **Killed.** |
+| H2 | Survived. | **Killed.** |
+| H5 | Killed. | Killed. |
+| H3, H4, H6 | Survived. | Survived. |
+| Stryker, all selected mutants | **50.00%**: 7 killed, 1 timed out, 8 survived. | **93.75%**: 14 killed, 1 timed out, 1 survived. |
+| Stryker, selected mutants in `config.ts` | **50.00%** | **100.00%** |
 
-Reports: [`agent-before.html`](../mutants/xinruil3/agent-before.html) and [`agent-after.html`](../mutants/xinruil3/agent-after.html). The only remaining survivor is #15 (`"Stryker was here"` added to the learning-mode-off branch in `prompt.ts`). That is not R7 behavior, and my R1 property kills it. H3, H4 and H6 break R3, R2 and R1, and my own properties for those requirements kill them.
+The reported overall scores include the timeout: `(7 + 1) / 16 = 50%` before strengthening and `(14 + 1) / 16 = 93.75%` afterward. The table keeps timeout results separate from killed mutants.
+
+Reports: [`agent-before.html`](../mutants/xinruil3/agent-before.html) and [`agent-after.html`](../mutants/xinruil3/agent-after.html).
+
+The only remaining Stryker survivor was #15, which adds `"Stryker was here"` to the system prompt when learning mode is off. That change concerns R1's request-preservation requirement, and my R1 property kills it. My own R3, R2 and R1 properties also kill H3, H4 and H6, respectively.
 
 ## Red team
 
-Red-teamer: Alex de Leeuw (adeleeuw). Attack: [PR #19 comment](https://github.com/CMU-313/fall-26-opencode-seg-fault/pull/19#issuecomment-6784089806), three mutants against commit `7901d1c`. Alex's patches are in [`mutants/adeleeuw/redteam/`](https://github.com/adeleeuw17/fall-26-opencode-seg-fault/tree/redteam/adeleeuw-vs-xinruil3-learning-mode/mutants/adeleeuw/redteam) on his branch. The hunk line counts in the posted patches are off, so apply them with `git apply --recount`, run `bun test test/session/learning-mode.property.test.ts` from `packages/opencode`, then revert with `git apply -R --recount`.
+Alex de Leeuw (adeleeuw) submitted three mutants against commit `7901d1c` in a [comment on PR #19](https://github.com/CMU-313/fall-26-opencode-seg-fault/pull/19#issuecomment-6784089806). His patches are in [`mutants/adeleeuw/redteam/`](https://github.com/adeleeuw17/fall-26-opencode-seg-fault/tree/redteam/adeleeuw-vs-xinruil3-learning-mode/mutants/adeleeuw/redteam) on his branch.
 
-| ID | Requirement | Change | Result on `7901d1c` (seed 42) | Response |
+The posted patches have incorrect hunk line counts. Apply each patch separately with `git apply --recount <patch-path>`. Then run `bun test test/session/learning-mode.property.test.ts` from `packages/opencode`. From the repository root, revert the same patch with `git apply -R --recount <patch-path>` before testing another mutant.
+
+| ID | Requirement targeted | Code change and resulting bug | Result on `7901d1c`, seed 42 | Response |
 |---|---|---|---|---|
-| M1 | R4 | `flag.ts`: `trim()` becomes `trimEnd()`, so a left-padded value such as `" TRUE "` is no longer recognized. | Killed by R4 (server-level), R4 (parser) and R7. | None needed. |
-| M2 | R3 | `config.ts`: the global config is merged after the project configs, so global beats project. | Killed by R3 and R4 (server-level). | None needed. |
-| M3 | R1 | `prompt.ts`: the learning-mode prompt is left out when the request asks for structured output (`format: json_schema`). | Survived. | Strengthened R1 (below). |
+| M1 | R4 | In `flag.ts`, replace `trim()` with `trimEnd()`. Leading whitespace remains, so a valid value such as `" TRUE "` is rejected. | Killed by the server-level R4 property, the R4 parser property, and R7. | No additional test change was needed. |
+| M2 | R3 | In `config.ts`, merge the global config after the project configs. Conflicting global settings then overwrite project settings. | Killed by R3 and the server-level R4 property. | No additional test change was needed. |
+| M3 | R1 | In `prompt.ts`, omit the learning-mode prompt when the request uses the `json_schema` structured-output format. | Survived. | Added structured-output requests to R1. |
 
-**Why M3 survived.** No property ever sent a structured-output prompt, so every generated request took the plain-text path and the mutated condition never mattered. M3 is not equivalent: with learning mode on, a json_schema request loses the learning-mode instructions, which breaks R1 (the enabled request carries the learning-mode block, and toggling changes only that block).
+**Why M3 survived.** Before this change, none of the properties sent a structured-output request. Every generated request used the plain-text path, where M3 left behavior unchanged. M3 is not equivalent to the original program: when learning mode is enabled for a `json_schema` request, it removes the learning-mode instructions that R1 requires.
 
-**Flaky runs.** My first M3 run also showed R1 and R5 failing, with a send seeing 0 model calls instead of 1, and timeouts. M3 did not cause these: R5 failed the same way with no mutant applied, and with M3 applied R1 passed when run on its own (21 s). The same intermittent failure hit R1 once after strengthening (96 calls during one send); R1 then passed 3 runs in a row. CI runs these properties green.
+**Intermittent test failures.** The first run with M3 also reported failures in R1 and R5. These included a send recording zero model calls when the fixture expected one, as well as timeouts. R5 showed the same failure without any mutant applied, and R1 passed with M3 applied when run separately, in 21 seconds. Those results did not provide a reliable indication that the properties had detected M3.
 
-**Strengthening.** R1 ("toggling learning mode preserves the rest of every model request", `learning-mode.property.test.ts:84`) now ends every generated case with one structured-output prompt, in both the disabled and the enabled session, reusing the first generated question. The schema's field name is generated (`answer`, `hint` or `next_step`). The fixture's `send()` takes an optional field: it sends `format: json_schema`, the simulated model answers through the StructuredOutput tool, and `send()` checks that the reply carries the structured result, so the case cannot pass on a plain-text fallback. Every case has this prompt, so coverage does not depend on the seed. All existing R1 assertions apply to it unchanged.
+After strengthening, R1 had another intermittent failure: one send recorded 96 model calls. It then passed three consecutive runs on its own. The baseline suite was green in CI on `7901d1c`. The table below distinguishes that full baseline run from the checks performed after strengthening.
 
-**Evidence** (seed 42):
+**Strengthening R1.** Each generated case now ends with a structured-output request in both the learning-mode-disabled and learning-mode-enabled sessions. It reuses the first generated question and chooses a schema field name from `answer`, `hint`, or `next_step`.
 
-| | Before | After |
+The fixture's `send()` helper now accepts an optional schema field name. When supplied, it sends a request with the `json_schema` format, and the simulated model responds through the `StructuredOutput` tool. The helper checks that the reply contains the structured result. This check prevents a plain-text fallback from satisfying the test.
+
+Every generated case includes this request, so structured-output coverage does not depend on the seed. R1 applies its existing request-comparison assertions to the new requests without changing those assertions. The property remains **"R1: toggling learning mode preserves the rest of every model request"**, at `learning-mode.property.test.ts:84`.
+
+**Results with seed 42:**
+
+| Check | Before the M3 strengthening | After the M3 strengthening |
 |---|---|---|
-| Baseline | all 7 pass (CI on `7901d1c`) | R2–R7 pass; R1 passes 3 of 3 runs on its own; opencode property and typecheck pass |
-| M3 | survived (R1 passes with M3 applied) | **killed** by R1: the enabled structured-output request has no learning-mode block |
-| H6 | killed by R1 | still killed by R1 |
+| Baseline | All seven properties passed in CI on `7901d1c`. | The other six properties passed: R2, R3, both R4 properties, R5, and R7. R1 passed three consecutive runs on its own. The separate agent-written property and typecheck also passed. |
+| M3 | Survived; R1 passed with M3 applied. | **Killed by R1:** the enabled structured-output request lacked the learning-mode block. |
+| H6 | Killed by R1. | Still killed by R1. |
 
-AI help: Claude helped analyze the three mutants and write the R1 strengthening; I ran every check above.
+AI help: Claude helped analyze the three red-team mutants and write the R1 strengthening. I ran every check reported in this section.
+
