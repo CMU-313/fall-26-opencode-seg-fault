@@ -36,6 +36,15 @@ export async function session(client: Client) {
   return result.data!.id
 }
 
+// Structured output: the prompt asks for a JSON object with one string field.
+export function structured(field: string) {
+  return {
+    type: "json_schema" as const,
+    schema: { type: "object", properties: { [field]: { type: "string" } }, required: [field] },
+    retryCount: 0,
+  }
+}
+
 export async function config(file: string, enabled: boolean | undefined, schema = true) {
   await Bun.write(
     file,
@@ -181,19 +190,30 @@ async function setup(fixture: Parameters<Parameters<typeof withCliFixture>[0]>[0
     }
   }
 
-  const send = async (client: Client, id: string, turn = scenario.turns[0]) => {
+  // field: when set, the prompt requests structured output (format json_schema)
+  // and the simulated model answers through the StructuredOutput tool, as a real
+  // model must on that path.
+  const send = async (client: Client, id: string, turn = scenario.turns[0], field?: string) => {
     const before = (await Effect.runPromise(fixture.llm.hits)).length
-    await Effect.runPromise(fixture.llm.text(turn.answer))
+    await Effect.runPromise(
+      field === undefined
+        ? fixture.llm.text(turn.answer)
+        : fixture.llm.tool("StructuredOutput", { [field]: turn.answer }),
+    )
     const result = await client.session.prompt(
       {
         sessionID: id,
         agent: "build",
         model: { providerID: "test", modelID: scenario.model },
         parts: [{ type: "text", text: turn.question }],
+        ...(field === undefined ? {} : { format: structured(field) }),
       },
       { throwOnError: true, signal: AbortSignal.timeout(20_000) },
     )
     expect(result.data?.info.error).toBeUndefined()
+    // Guard against a vacuous pass: a structured prompt must really end with the
+    // structured result, not fall back to a plain text reply.
+    if (field !== undefined) expect(result.data?.info.structured).toEqual({ [field]: turn.answer })
     const hits = await Effect.runPromise(fixture.llm.hits)
     expect(hits.length - before).toBe(1)
     const request = hits[before].body

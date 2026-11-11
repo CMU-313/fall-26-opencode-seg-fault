@@ -71,27 +71,38 @@ const mcp = fc.option(
   { nil: undefined },
 )
 
+// Structured-output prompts (format json_schema) take their own path when the
+// request is built: an extra system prompt, a StructuredOutput tool and a required
+// tool call. R1 ends every case with one such prompt, so toggling is checked on
+// that path whatever the seed draws. The schema's field name is generated.
+const field = fc.constantFrom("answer", "hint", "next_step")
+
 // R1: Enabling or disabling learning mode must preserve the selected model,
 // tool definitions, user messages, conversation history and all other system
 // instructions; only the learning-mode instructions may be added or removed.
 // Kind: invariant
 test("R1: toggling learning mode preserves the rest of every model request", async () => {
   await fc.assert(
-    fc.asyncProperty(scenario, mcp, async (base, guide) => {
+    fc.asyncProperty(scenario, mcp, field, async (base, guide, name) => {
       const input = { ...base, mcp: guide }
+      // The generated text turns, then the first question again as a structured-output prompt.
+      const steps = [
+        ...input.turns.map((turn) => ({ turn, field: undefined as string | undefined })),
+        { turn: input.turns[0], field: name },
+      ]
       await withLearningMode(input, async (fixture) => {
         const server = await fixture.start()
         const client = server.client()
         await config(fixture.file, false)
         const disabled = await session(client)
         const baseline: Record<string, unknown>[] = []
-        for (const message of input.turns) baseline.push(await fixture.send(client, disabled, message))
+        for (const step of steps) baseline.push(await fixture.send(client, disabled, step.turn, step.field))
 
         await config(fixture.file, true)
         await client.instance.dispose({}, { throwOnError: true })
         const enabled = await session(client)
-        for (const [index, message] of input.turns.entries()) {
-          const request = await fixture.send(client, enabled, message)
+        for (const [index, step] of steps.entries()) {
+          const request = await fixture.send(client, enabled, step.turn, step.field)
           expect(systemText(baseline[index])).not.toContain(PROMPT_LEARNING_MODE)
           expect(systemText(request).split(PROMPT_LEARNING_MODE)).toHaveLength(2)
           expect(systemText(request)).toContain(input.instruction)
