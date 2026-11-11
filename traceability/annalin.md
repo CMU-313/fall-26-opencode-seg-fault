@@ -198,3 +198,15 @@ const target = fc.array(segment, { minLength: 1, maxLength: 4 }).map((parts) => 
 - On the original code it passes: 1 pass, 0 fail ([strengthened-baseline.log](../mutants/annalin/strengthened-baseline.log)).
 - With mutant #9 applied it fails: 0 pass, 1 fail, counterexample `["\na","a",false,false]`, meaning `rm` followed by a name starting with a newline was not denied ([strengthened-S9.log](../mutants/annalin/strengthened-S9.log)).
 - It still kills H5.
+
+## Red team
+
+My feature was claimed by **Jay Yip (jayy, Team Zero)**, who posted three mutants on PR #22 written against commit `4ceabc0`. The patches are in [mutants/annalin/redteam-received/](../mutants/annalin/redteam-received/).
+
+| ID | Requirement | Change | Result against the original four properties | Result after strengthening |
+|---|---|---|---|---|
+| RT1 | R1 | Adds `break` after `needsAsk = true` in `Permission.ask`, so once one command needs approval the loop stops and never checks later commands for a deny. | Survived. R1 only mixed the denied `rm` with `git status`, which is always allowed, so no ask command ever came before the deny. | Killed by the new property `R1: a denial is found even after commands that need approval` ([RT1.log](../mutants/annalin/redteam-received/RT1.log)). |
+| RT2 | R4 | Removes the `s` regex flag in `wildcard.ts`, so `*` no longer matches a line break and `rm` of a name containing a newline escapes the `rm *` deny. | Survived. The R4 generator includes spaces, Unicode, and regex symbols, but never a line break. | Killed by `R4: rule patterns match whole commands exactly`, which checks that `rm *` matches commands containing a newline ([RT2.log](../mutants/annalin/redteam-received/RT2.log)). This is the same behavior change as Stryker mutant #9 in the agent failure case. |
+| RT3 | R2 | Changes the `always` auto-resolution check from `=== "allow"` to `!== "deny"`, so approving one request with `always` also approves other waiting requests that still need approval. | Survived. R2 only ever had one pending request, so there was never a second request for `always` to wrongly approve. | Killed by `R2: always remembers approvals for the session, once does not`, which keeps a partly covered request pending and checks that it is not auto-approved ([RT3.log](../mutants/annalin/redteam-received/RT3.log)). |
+
+The fix for RT1 is a new property. RT2 and RT3 are killed by properties added during Stryker strengthening. None of the three is equivalent, since each one changes an observable permission decision. Each log shows 10 pass and 1 fail with the mutant applied, and all 11 properties pass on the original code.

@@ -1,0 +1,12 @@
+diff --git a/packages/opencode/src/permission/index.ts b/packages/opencode/src/permission/index.ts
+--- a/packages/opencode/src/permission/index.ts
++++ b/packages/opencode/src/permission/index.ts
+@@ -153,7 +153,7 @@ const layer = Layer.effect(
+       for (const [id, item] of pending.entries()) {
+         if (item.info.sessionID !== existing.info.sessionID) continue
+         const ok = item.info.patterns.every(
+-          (pattern) => evaluate(item.info.permission, pattern, approved).action === "allow",
++          (pattern) => evaluate(item.info.permission, pattern, approved).action !== "deny",
+         )
+         if (!ok) continue
+         pending.delete(id)

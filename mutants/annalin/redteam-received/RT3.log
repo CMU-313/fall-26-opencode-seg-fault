@@ -1,0 +1,100 @@
+bun test v1.4.2 (744846f84)
+
+test/permission/annalin.property.test.ts:
+(pass) R1: effective deny blocks the execution continuation [235.99ms]
+(pass) R2: ask waits for approval and rejection prevents continuation [2503.68ms]
+(pass) R3: restoring a setting restores the original decision [4.09ms]
+(pass) R4: changing a deletion target preserves denial under rm * [1.09ms]
+(pass) R4: rule patterns match whole commands exactly [1.79ms]
+(pass) R2: a command with no matching rule defaults to ask [0.54ms]
+(pass) R1/R2: allowed requests run without asking, denials report only their rules [624.23ms]
+(pass) R2: approval requests keep their identity and every reply is handled once [2440.06ms]
+(pass) R2: rejecting a request rejects its whole session and no other [11418.48ms]
+[09:18:11.507] ERROR (#4343): 2464 | 	return defaultReportMessageInternal(out, stringifySecond);
+2465 | }
+2466 | /** @internal */
+2467 | function buildError(errorMessage, out) {
+2468 | 	if (out.runConfiguration.includeErrorInReport) throw new SError(errorMessage);
+2469 | 	const error = new SError(errorMessage, { cause: out.errorInstance });
+                          ^
+error: Property failed after 2 tests
+{ seed: 42, path: "1", endOnFailure: true }
+Counterexample: ["always","Ba/-","Zc"]
+Shrunk 0 time(s)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2469:20)
+      at asyncThrowIfFailed (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2481:8)
+      at processTicksAndRejections (native:7:39)
+
+516 |               expect(Exit.isSuccess(yield* Fiber.await(asked.fiber))).toBe(true)
+517 | 
+518 |               const stillPending = (reply === "always" ? [partial, elsewhere] : [covered, partial, elsewhere]).map(
+519 |                 (item) => String(item.id),
+520 |               )
+521 |               expect(yield* pendingIDs(permission)).toEqual(stillPending.toSorted())
+      ^
+error: expect(received).toEqual(expected)
+
+  [
+-   "per_1c9e689f3001GcHlx535bGyZI1",
+    "per_1c9e68a08001995oEEf5OJ7w7S",
+  ]
+
+- Expected  - 1
++ Received  + 0
+
+      at toEqual (unknown:1:1)
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/packages/opencode/test/permission/annalin.property.test.ts:521:53
+
+2464 | 	return defaultReportMessageInternal(out, stringifySecond);
+2465 | }
+2466 | /** @internal */
+2467 | function buildError(errorMessage, out) {
+2468 | 	if (out.runConfiguration.includeErrorInReport) throw new SError(errorMessage);
+2469 | 	const error = new SError(errorMessage, { cause: out.errorInstance });
+                          ^
+error: Property failed after 2 tests
+{ seed: 42, path: "1", endOnFailure: true }
+Counterexample: ["always","Ba/-","Zc"]
+Shrunk 0 time(s)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2469:20)
+      at asyncThrowIfFailed (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2481:8)
+      at processTicksAndRejections (native:7:39)
+
+516 |               expect(Exit.isSuccess(yield* Fiber.await(asked.fiber))).toBe(true)
+517 | 
+518 |               const stillPending = (reply === "always" ? [partial, elsewhere] : [covered, partial, elsewhere]).map(
+519 |                 (item) => String(item.id),
+520 |               )
+521 |               expect(yield* pendingIDs(permission)).toEqual(stillPending.toSorted())
+      ^
+error: expect(received).toEqual(expected)
+
+  [
+-   "per_1c9e689f3001GcHlx535bGyZI1",
+    "per_1c9e68a08001995oEEf5OJ7w7S",
+  ]
+
+- Expected  - 1
++ Received  + 0
+
+      at toEqual (unknown:1:1)
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/packages/opencode/test/permission/annalin.property.test.ts:521:53
+      at ~effect/Effect/successCont (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:870:26)
+      at runLoop (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:444:98)
+      at evaluate (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:412:23)
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:723:15
+      at onExit (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:953:5)
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:964:7
+      at evaluate (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:425:23)
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:723:15
+(fail) R2: always remembers approvals for the session, once does not [370.53ms]
+(pass) R1: a denial is found even after commands that need approval [185.54ms]
+
+ 10 pass
+ 1 fail
+ 6898 expect() calls
+Ran 11 tests across 1 file. [19.25s]
