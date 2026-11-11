@@ -28,6 +28,8 @@
 
 Properties written or suggested by opencode or another AI tool: R1, R2, R3, R5, R8
 
+The R3 metamorphic property was expanded to cover R4 whitespace normalization as well during P5. It compares the result of a canonical command with forms containing repeated spaces, tabs, newlines, and outer whitespace. This expanded scope was motivated by the `.trim()` and `\s+` Stryker survivors.
+
 ## Requirement changes
 
 | ID | Original requirement (P3) | Revised requirement | Why it changed |
@@ -54,7 +56,7 @@ I did not modify the `/hint` behavior, but I refactored the code to put the `/hi
 ## Stryker Comparison 
 **fast-check seed:** `42`
 
-Stryker mutated `packages/tui/src/prompt/hint.ts` and ran only `test/session/hint.property.test.ts`. It generated 52 mutants: 44 were killed and 7 survived, for a mutation score of 86.27% (44/51). 
+Stryker mutated `packages/tui/src/prompt/hint.ts` and ran only `test/session/hint.property.test.ts`. It generated 51 mutants: 44 were killed and 7 survived, for a mutation score of 86.27% (44/51). 
 
 Stryker did not generate the exact semantic changes represented by H1–H5: replacing the supported-level message with a generic message, clearing the previous active level after invalid input, removing case normalization, accepting abbreviations as complete settings, or returning a generic confirmation without the new level. Stryker instead applied general syntactic mutations such as regular-expression edits, optional-chaining removal, and conditional-expression changes. Hand-written mutants therefore exercised feature-specific requirements that Stryker could not infer from the implementation alone.
 
@@ -74,12 +76,257 @@ Hand-written mutants found domain-specific failures in error guidance, state pre
 
 ## Strengthening
 
-I do not claim any equivalent mutants: every mutant produced an observable behavior change and was killed by a generated property. Therefore the final score with equivalent mutants excluded is unchanged: 100.00% (51/51).
+I do not claim any equivalent mutants: every mutant produced an observable behavior change and was killed by a generated property. Therefore the final score with equivalent mutants excluded and final raw score is the same: 100.00% (51/51).
 
 | Survivor category | Stronger property |
 |---|---|
-| Removing `.trim()` / changing `\s+` | Strengthen R3 to generate repeated spaces, tabs, newlines, and outer whitespace around every supported setting. Assert each whitespace-normalized command has the same result as the canonical command. |
+| Removing `.trim()` / changing `\s+` | Expand the R3/R4 metamorphic property to generate repeated spaces, tabs, newlines, and outer whitespace around every supported setting. Assert each whitespace-normalized command has the same result as the canonical command. |
 | Removing `^` or `$` regex anchors | Generate nonempty prefixes and suffixes around otherwise valid `/hint <level>` text. Assert non-command text is not handled as a hint command, and malformed command text cannot change the level. |
 | Making the argument mandatory | Generate every active level and call `/hint` without a value. Assert it returns a safe error response and preserves the active level. |
 | Replacing `if (!match)` with `if (false)` | Generate arbitrary text that is not a `/hint` command. Assert `applyHintCommand` returns `{ handled: false }`. |
 | Removing optional chaining | Reuse the generated missing-argument property. It will catch the crash caused by `match[1].toLowerCase()`. |
+
+## Agent Failure Case
+
+I asked Opencode (GPT 5.6 Terra, `/build` agent) to create an independent property for R1. It created `packages/tui/test/prompt/hint.property.test.ts`.
+
+### Transcript excerpt
+
+**Share link:** https://opncd.ai/share/QAtbkOr6
+
+**Prompt:**
+
+> Write a property test for this requirement: When a user enters a hint level that is not one of subtle, moderate, detailed, or none (case-insensitively), the system must reject the selection and return an error toast that lists the supported hint levels, so the user can choose again. Ignore `packages/opencode/test/session/hint.property.test.ts` as that contains my properties. Create your own properties.
+
+**Opencode response excerpt:**
+
+> I’ll add a focused fast-check property in the TUI test suite. It will generate arbitrary non-whitespace hint tokens excluded from the supported set after lowercasing, then assert the command is handled as an error, preserves the current selection, retains input, and exposes every supported level in the toast.
+
+### Surviving mutant
+
+I ran Opencode's generated property for R1 `packages/tui/test/prompt/hint.property.test.ts` against Stryker mutants by changing `stryker.lilyq.config.json`. I changed the `command` in `commandRunner` to `cd packages/tui && bun test --timeout 30000 test/prompt/hint.property.test.ts` from `cd packages/opencode && bun test --timeout 30000 test/session/hint.property.test.ts`. I also changed the destination of the html report to `packages/tui/reports/mutation/mutation.html`.
+
+Here are the unkilled mutants and their relevance to the targeted requirement (`R1: unsupported hint levels are rejected with an error listing the supported levels`):
+
+| Mutant(s) | Count | R1 relevance | Fix |
+|---|---:|---|---|
+| Remove `.trim()` | 1 | Indirectly relevant: an invalid setting can include harmless outer whitespace | Fixed: generate outer whitespace |
+| Change `\s+` to `\s` | 1 | Indirectly relevant: an invalid setting can follow repeated whitespace | Fixed: generate repeated spaces, tabs, and newlines |
+| Remove `^` and/or `$` regex anchors | 3 | No — malformed/non-command syntax | Parser/R4 boundary property, not R1 |
+| Replace `if (!match)` with `if (false)` | 1 | No — non-command handling | Parser-boundary property, not R1 |
+| `.toLowerCase()` → `.toUpperCase()`; remove optional chaining | 2 | No — valid-setting casing and missing-value behavior | R3 / missing-argument property |
+| Mutate the `setting === "none"` branch or its return values | 8 | No — `none` is a valid success case | Valid-setting/R8 property |
+| Mutate the supported-setting success branch or its return values | 7 | No — valid-setting success behavior | R3/R8 property |
+| Mutate `isHintLevel` predicate logic | 11 | No — valid supported-setting recognition | R3/R8 property |
+
+
+### Why the property was too weak
+
+The generated value is explicitly restricted to contain no whitespace, and the test always builds `/hint ` followed by that value, with exactly one normal space and no leading or trailing whitespace. Removing `.trim()` therefore cannot change the behavior for any generated input: the generator never reaches the whitespace boundary that exposes the bug.
+
+### Strengthened property and evidence
+
+I strengthened the Opencode-generated R1 property in `packages/tui/test/prompt/hint.property.test.ts` to generate single and repeated spaces, tabs, newlines, and outer whitespace around each invalid setting. This makes removing `.trim()` or replacing `\s+` with `\s` observable. Stryker's run of this agent-only property improved from 17/51 killed (33.33%) to 19/51 killed (37.25%): both whitespace mutants were killed. The remaining survivors concern valid settings, `/hint none`, missing arguments, or malformed/non-command input, which are outside R1.
+
+<details>
+<summary>Full Opencode transcript</summary>
+
+```text
+>Thought: Planning commentary update · 801ms
+>I’ll locate the hint-level selection flow and its existing test conventions, then add an independent property test covering invalid case-insensitive inputs and the error toast contract.
+
+>Todos
+
+[•] Locate hint-level selection implementation and test conventions
+[ ] Add independent property test for invalid hint-level rejection toast
+[ ] Run focused test and typecheck if practical
+✱Glob "**/*hint*" in . (2 matches)
+✱Grep "subtle|moderate|detailed" in . (48 matches)
+✱Glob "test/**/*.property.test.ts" in . (1 match)
+✱Glob "**/*property*.test.ts" in . (1 match)
++ Thought: Inspecting test ignore property implementation · 1.3s
+→Read src/session/prompt.ts [offset=60, limit=60]
+→Read src/session/prompt.ts [offset=1490, limit=85]
+→Read test/session/prompt.test.ts [offset=1, limit=100]
+↳ Loaded test/AGENTS.md
+→Read package.json [offset=1, limit=180]
+✱Grep "hintLevel|hint level|HintLevel" in src (3 matches)
++ Thought: Searching entire repo for TUI code · 895ms
+✱Grep "hint level|hintLevel|Hint level|Hint Level" in ~/fall-26-opencode-seg-fault (100 matches)
+✱Grep "toast.*error|error.*toast|Toast" in ~/fall-26-opencode-seg-fault/packages (100 matches)
+✱Glob "**/*.property.test.ts" in ~/fall-26-opencode-seg-fault (1 match)
+✱Grep "fast-check|fc\.property|fc\.assert" in test (15 matches)
++ Thought: Assessing test placement for hint property · 1.6s
+→Read ~/fall-26-opencode-seg-fault/packages/tui/src/prompt/hint.ts [limit=160]
+→Read ~/fall-26-opencode-seg-fault/packages/tui/src/component/prompt/index.tsx [offset=490, limit=55]
+→Read ~/fall-26-opencode-seg-fault/packages/tui/src/component/prompt/index.tsx [offset=1050, limit=55]
+✱Glob "test/**/*hint*" in ~/fall-26-opencode-seg-fault/packages/tui
+✱Grep "applyHintCommand|prompt/hint" in ~/fall-26-opencode-seg-fault/packages/tui
+→Read ~/fall-26-opencode-seg-fault/packages/tui/package.json [limit=100]
++ Thought: Planning test dependency setup for TUI · 1.7s
+The behavior is isolated in packages/tui/src/prompt/hint.ts: it normalizes input with toLowerCase(), preserves the active level on failure, and returns the usage string as an error toast. I’ll test that module directly in the TUI package, without consulting the existing property file.
+# Todos
+[✓] Locate hint-level selection implementation and test conventions
+[•] Add independent property test for invalid hint-level rejection toast
+[ ] Run focused test and typecheck if practical
+✱Glob "test/**/*.test.ts*" in ~/fall-26-opencode-seg-fault/packages/tui (46 matches)
+→Read ~/fall-26-opencode-seg-fault/packages/tui/test/cli/tui/dialog-prompt.test.tsx [limit=140]
+✱Grep "fast-check" in ~/fall-26-opencode-seg-fault (1 match)
+→Read ~/fall-26-opencode-seg-fault/package.json [offset=1, limit=140]
++ Thought: Planning property test for TUI package · 14.9s
++ Thought: Designing Unicode non-whitespace string generation · 8ms
++ Thought: Planning input validation and error handling · 1.7s
+I’ll add a focused fast-check property in the TUI test suite. It will generate arbitrary non-whitespace hint tokens excluded from the supported set after lowercasing, then assert the command is handled as an error, preserves the current selection, retains input, and exposes every supported level in the toast.
+← Patched packages/tui/package.json
+  },
+  "devDependencies": {
+    "@tsconfig/bun": "catalog:",
+    "@types/bun": "catalog:",
+    "@typescript/native-preview": "catalog:"
+    "@typescript/native-preview": "catalog:",
+    "fast-check": "4.10.2"
+  }
+}
+# Created packages/tui/test/prompt/hint.property.test.ts
+import { expect, test } from "bun:test"
+import fc from "fast-check"
+import { HintSetting, applyHintCommand } from "../../src/prompt/hint"
+
+const supportedSettings = new Set<string>(HintSetting)
+const activeLevels = [undefined, "subtle", "moderate", "detailed"] as const
+
+test("invalid hint levels are rejected with an error that lists every supported level", () => {
+  fc.assert(
+    fc.property(
+      fc.constantFrom(...activeLevels),
+      fc.string().filter((value) => value.length > 0 && !/\s/.test(value) && !supportedSettings.has(value.toLowerCase())),
+      (active, invalidSetting) => {
+        const result = applyHintCommand(`/hint ${invalidSetting}`, active)
+
+        expect(result.handled).toBe(true)
+        if (!result.handled) throw new Error("expected hint command to be handled")
+
+        expect(result.clearInput).toBe(false)
+        expect(result.hintLevel).toBe(active)
+        expect(result.toast.variant).toBe("error")
+        expect(HintSetting.every((setting) => result.toast.message.includes(setting))).toBe(true)
+      },
+    ),
+  )
+})
++ Thought: Planning focused test runs · 637ms
+# Todos
+[✓] Locate hint-level selection implementation and test conventions
+[✓] Add independent property test for invalid hint-level rejection toast
+[•] Run focused test and typecheck if practical
+# Running in ~/fall-26-opencode-seg-fault/packages/tui
+$ bun test test/prompt/hint.property.test.ts
+bun test v1.4.0 (34cbb9a40)
+
+test/prompt/hint.property.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find package 'fast-check' from '/home/lily/fall-26-opencode-seg-fault/packages/tui/test/prompt/hint.property.test.ts'
+-------------------------------
+
+
+…
+Click to expand
+# Running in ~/fall-26-opencode-seg-fault/packages/tui
+$ bun typecheck
+$ tsgo --noEmit
+test/prompt/hint.property.test.ts(2,16): error TS2307: Cannot find module 'fast-check' or its corresponding type declarations.
+test/prompt/hint.property.test.ts(12,27): error TS7006: Parameter 'value' implicitly has an 'any' type.
+test/prompt/hint.property.test.ts(13,8): error TS7006: Parameter 'active' implicitly has an 'any' type.
+test/prompt/hint.property.test.ts(13,16): error TS7006: Parameter 'invalidSetting' implicitly has an 'any' type.
++ Thought: Considering adding fast-check and running bun install · 3.5s
++ Thought: Planning dependency installation sequence · 1.6s
+The TUI package did not have fast-check installed, so the new declared test dependency is not yet linked into its workspace. I’ll refresh workspace dependencies, then rerun the focused test and TUI typecheck.
+# Running in ~/fall-26-opencode-seg-fault
+$ ls
+AGENTS.md
+CONTEXT.md
+CONTRIBUTING.md
+LICENSE
+README.ar.md
+README.bn.md
+README.br.md
+README.bs.md
+README.da.md
+README.de.md
+…
+Click to expand
+# Running in ~/fall-26-opencode-seg-fault
+$ bun install
+bun install v1.4.0 (34cbb9a40)
+Resolving dependencies
+Resolved, downloaded and extracted [18]
+Saved lockfile
+
+$ bun run --cwd packages/core fix-node-pty
+$ bun run script/fix-node-pty.ts
+$ husky
+
+Checked 2528 installs across 2801 packages (no changes) [5.84s]
+# Running in ~/fall-26-opencode-seg-fault/packages/tui
+$ bun test test/prompt/hint.property.test.ts
+bun test v1.4.0 (34cbb9a40)
+
+ 1 pass
+ 0 fail
+ 500 expect() calls
+Ran 1 test across 1 file. [1418.00ms]
+# Running in ~/fall-26-opencode-seg-fault/packages/tui
+$ bun typecheck
+$ tsgo --noEmit
+# Running in ~/fall-26-opencode-seg-fault
+$ git diff --check
+traceability/lilyq.md:89: trailing whitespace.
++None of my P4 properties came from Opencode, so I asked it to write a property for R1. I used GPT 5.6 Terra on `/build` agent.
+traceability/lilyq.md:95: trailing whitespace.
++Prompt:
+traceability/lilyq.md:96: trailing whitespace.
++>Write a property test for this requirement: When a user enters a hint level that is not one of subtle, moderate, detailed, or none (case-insensitively), the system must reject the selection and return an error toast that lists the supported hint levels, so the user can choose again. Ignore packages/opencode/test/session/hint.property.test.ts as that contains my properties. Create your own properties. Use helpers throughout the repo as needed, but not the property file.
+traceability/lilyq.md:98: trailing whitespace.
++Response (property generated is in `packages/opencode`):
++ Thought: Running git status and diff checks · 997ms
+# Todos
+[✓] Locate hint-level selection implementation and test conventions
+[✓] Add independent property test for invalid hint-level rejection toast
+[✓] Run focused test and typecheck if practical
+# Running in ~/fall-26-opencode-seg-fault
+$ git status --short
+M bun.lock
+ M mutants/lilyq/mutation.html
+ M packages/tui/package.json
+ M traceability/lilyq.md
+?? .devcontainer/devcontainer-lock.json
+?? packages/tui/test/prompt/hint.property.test.ts
+?? traceability/image.png
+# Running in ~/fall-26-opencode-seg-fault
+$ git diff -- packages/tui/package.json packages/tui/test/prompt/hint.property.test.ts bun.lock
+diff --git a/bun.lock b/bun.lock
+index b7983c0..81ac216 100644
+--- a/bun.lock
++++ b/bun.lock
+@@ -969,6 +969,7 @@
+         "@tsconfig/bun": "catalog:",
+         "@types/bun": "catalog:",
+         "@typescript/native-preview": "catalog:",
++        "fast-check": "4.10.2",
+       },
+…
+Click to expand
++ Thought: Verifying test and typecheck coverage outside git diff · 2.1s
+Added an independent property test at packages/tui/test/prompt/hint.property.test.ts.
+It generates unsupported case-insensitive hint tokens and verifies rejection preserves the active selection, retains input, and returns an error toast listing subtle, moderate, detailed, and none.
+Added fast-check to TUI dev dependencies and updated bun.lock.
+Verified:
+- bun test test/prompt/hint.property.test.ts
+- bun typecheck in packages/tui
+git diff --check reports pre-existing trailing whitespace in traceability/lilyq.md; it was not modified.
+
+```
+
+</details>
