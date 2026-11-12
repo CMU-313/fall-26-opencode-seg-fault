@@ -1,0 +1,30 @@
+{
+    "testRunner": "command",
+    "commandRunner": {
+        "command": "cd packages/opencode && bun test --timeout 30000 test/session/hint.property.test.ts"
+    },
+    "mutate": [
+        "packages/tui/src/prompt/hint.ts:8-51"
+    ],
+    "ignorePatterns": [
+        "packages/*",
+        "!packages/opencode/**",
+        "!packages/tui/**",
+        "packages/opencode/node_modules/**",
+        "packages/tui/node_modules/**",
+        "**/.stryker-tmp/**"
+    ],
+    "disableTypeChecks": false,
+    "coverageAnalysis": "off",
+    "reporters": [
+        "html",
+        "clear-text",
+        "progress"
+    ],
+    "htmlReporter": {
+        "fileName": "packages/opencode/reports/mutation/mutation.html"
+    },
+    "concurrency": 1,
+    "timeoutFactor": 3,
+    "timeoutMS": 15000
+}

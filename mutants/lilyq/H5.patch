@@ -1,0 +1,30 @@
+diff --git a/packages/tui/src/prompt/hint.ts b/packages/tui/src/prompt/hint.ts
+index 493e131..3e92ff0 100644
+--- a/packages/tui/src/prompt/hint.ts
++++ b/packages/tui/src/prompt/hint.ts
+@@ -11,11 +11,11 @@ export function applyHintCommand(
+ ):
+   | { handled: false }
+   | {
+-      handled: true
+-      clearInput: boolean
+-      hintLevel: HintLevel | undefined
+-      toast: { message: string; variant: "error" | "info" }
+-    } {
++    handled: true
++    clearInput: boolean
++    hintLevel: HintLevel | undefined
++    toast: { message: string; variant: "error" | "info" }
++  } {
+   const match = input.trim().match(/^\/hint(?:\s+(\S+))?$/)
+   if (!match) return { handled: false } as const
+ 
+@@ -34,7 +34,7 @@ export function applyHintCommand(
+       handled: true,
+       clearInput: true,
+       hintLevel: setting,
+-      toast: { message: `Hint level: ${setting}`, variant: "info" as const },
++      toast: { message: "Hint level updated", variant: "info" as const },
+     }
+   }
+ 

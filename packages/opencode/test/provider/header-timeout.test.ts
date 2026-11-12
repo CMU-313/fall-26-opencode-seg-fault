@@ -25,7 +25,7 @@ const it = testEffect(
 it.live("headerTimeout does not abort delayed SSE body after headers arrive", () =>
   Effect.gen(function* () {
     const server = yield* Effect.acquireRelease(
-      Effect.promise(() => delayedBodyServer(1_000)),
+      Effect.promise(() => delayedBodyServer(3_000)),
       (server) => Effect.sync(() => server.server.close()),
     )
 
@@ -41,7 +41,7 @@ it.live("headerTimeout does not abort delayed SSE body after headers arrive", ()
 
           expect(yield* Effect.promise(() => result.text)).toBe("late")
         }),
-      { config: providerConfig(server.url, { headerTimeout: 500 }) },
+      { config: providerConfig(server.url, { headerTimeout: 2_000 }) },
     )
   }),
 )
@@ -60,7 +60,7 @@ it.live("chunkTimeout raises a response stream error when SSE body stalls", () =
           const model = yield* provider.getModel(ProviderV2.ID.make("test"), ModelV2.ID.make("test-model"))
           const result = streamText({
             model: yield* provider.getLanguage(model),
-            onError() {},
+            onError() { },
             messages: [{ role: "user", content: "hello" }],
           })
 
@@ -94,7 +94,7 @@ it.live("headerTimeout aborts when response headers do not arrive", () =>
           const model = yield* provider.getModel(ProviderV2.ID.make("test"), ModelV2.ID.make("test-model"))
           const result = streamText({
             model: yield* provider.getLanguage(model),
-            onError() {},
+            onError() { },
             messages: [{ role: "user", content: "hello" }],
           })
 

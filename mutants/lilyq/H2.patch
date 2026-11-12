@@ -1,0 +1,13 @@
+diff --git a/packages/tui/src/prompt/hint.ts b/packages/tui/src/prompt/hint.ts
+--- a/packages/tui/src/prompt/hint.ts
++++ b/packages/tui/src/prompt/hint.ts
+@@ -41,7 +41,7 @@ export function applyHintCommand(
+   return {
+     handled: true,
+     clearInput: false,
+-    hintLevel: active,
++    hintLevel: undefined,
+     toast: { message: hintUsage, variant: "error" as const },
+   }
+ }
+ 

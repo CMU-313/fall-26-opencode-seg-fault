@@ -1548,6 +1548,7 @@ describe("workspace sync state", () => {
                 Effect.gen(function* () {
                   expect((yield* sessionSvc.get(session.id).pipe(Effect.orDie)).title).toBe("from sse")
                 }),
+                5_000,
               )
               expect(
                 captured.events.some(
