@@ -1,0 +1,90 @@
+bun test v1.4.2 (744846f84)
+
+test/permission/annalin.property.test.ts:
+(pass) R1: effective deny blocks the execution continuation [367.70ms]
+(pass) R2: ask waits for approval and rejection prevents continuation [2403.08ms]
+(pass) R3: restoring a setting restores the original decision [3.74ms]
+(pass) R4: changing a deletion target preserves denial under rm * [0.96ms]
+(pass) R4: rule patterns match whole commands exactly [1.73ms]
+(pass) R2: a command with no matching rule defaults to ask [0.45ms]
+(pass) R1/R2: allowed requests run without asking, denials report only their rules [205.20ms]
+(pass) R2: approval requests keep their identity and every reply is handled once [2351.93ms]
+(pass) R2: rejecting a request rejects its whole session and no other [11335.07ms]
+(pass) R2: always remembers approvals for the session, once does not [10160.77ms]
+[09:17:23.580] ERROR (#6166): 2464 | 	return defaultReportMessageInternal(out, stringifySecond);
+2465 | }
+2466 | /** @internal */
+2467 | function buildError(errorMessage, out) {
+2468 | 	if (out.runConfiguration.includeErrorInReport) throw new SError(errorMessage);
+2469 | 	const error = new SError(errorMessage, { cause: out.errorInstance });
+                          ^
+error: Property failed after 1 tests
+{ seed: 42, path: "0", endOnFailure: true }
+Counterexample: [["[x](a)+$.txt"],"/].中",0]
+Shrunk 0 time(s)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2469:20)
+      at asyncThrowIfFailed (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2481:8)
+      at processTicksAndRejections (unknown:7:39)
+
+594 |                   .pipe(
+595 |                     Effect.andThen(Effect.sync(() => continued.push("executed"))),
+596 |                     Effect.exit,
+597 |                     Effect.timeoutOption("2 seconds"),
+598 |                   )
+599 |                 expect(result._tag).toBe("Some")
+      ^
+error: expect(received).toBe(expected)
+
+Expected: "Some"
+Received: "None"
+
+      at toBe (unknown:1:1)
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/packages/opencode/test/permission/annalin.property.test.ts:599:37
+
+2464 | 	return defaultReportMessageInternal(out, stringifySecond);
+2465 | }
+2466 | /** @internal */
+2467 | function buildError(errorMessage, out) {
+2468 | 	if (out.runConfiguration.includeErrorInReport) throw new SError(errorMessage);
+2469 | 	const error = new SError(errorMessage, { cause: out.errorInstance });
+                          ^
+error: Property failed after 1 tests
+{ seed: 42, path: "0", endOnFailure: true }
+Counterexample: [["[x](a)+$.txt"],"/].中",0]
+Shrunk 0 time(s)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2469:20)
+      at asyncThrowIfFailed (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2481:8)
+      at processTicksAndRejections (unknown:7:39)
+
+594 |                   .pipe(
+595 |                     Effect.andThen(Effect.sync(() => continued.push("executed"))),
+596 |                     Effect.exit,
+597 |                     Effect.timeoutOption("2 seconds"),
+598 |                   )
+599 |                 expect(result._tag).toBe("Some")
+      ^
+error: expect(received).toBe(expected)
+
+Expected: "Some"
+Received: "None"
+
+      at toBe (unknown:1:1)
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/packages/opencode/test/permission/annalin.property.test.ts:599:37
+      at ~effect/Effect/successCont (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:870:26)
+      at runLoop (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:444:98)
+      at evaluate (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:412:23)
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:723:15
+      at onExit (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:953:5)
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:964:7
+      at evaluate (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:425:23)
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:723:15
+(fail) R1: a denial is found even after commands that need approval [2226.19ms]
+
+ 10 pass
+ 1 fail
+ 6829 expect() calls
+Ran 11 tests across 1 file. [30.60s]

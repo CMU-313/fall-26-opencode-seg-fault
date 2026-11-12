@@ -1,0 +1,11 @@
+diff --git a/packages/opencode/src/permission/index.ts b/packages/opencode/src/permission/index.ts
+--- a/packages/opencode/src/permission/index.ts
++++ b/packages/opencode/src/permission/index.ts
+@@ -79,6 +79,7 @@ const layer = Layer.effect(
+         }
+         if (rule.action === "allow") continue
+         needsAsk = true
++        break
+       }
+ 
+       if (!needsAsk) return

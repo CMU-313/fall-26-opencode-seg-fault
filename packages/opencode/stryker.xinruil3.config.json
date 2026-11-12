@@ -1,0 +1,12 @@
+{
+  "testRunner": "command",
+  "commandRunner": { "command": "bun test --bail test/session/learning-mode.property.test.ts" },
+  "mutate": [
+    "src/config/config.ts:587-596",
+    "src/session/prompt.ts:1281-1281"
+  ],
+  "coverageAnalysis": "off",
+  "concurrency": 8,
+  "timeoutFactor": 3,
+  "reporters": ["html", "clear-text", "progress"]
+}

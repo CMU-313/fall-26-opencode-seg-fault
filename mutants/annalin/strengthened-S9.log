@@ -1,0 +1,25 @@
+bun test v1.4.2 (744846f84)
+
+test/permission/annalin.opencode-strengthened.test.ts:
+2471 | 	return error;
+2472 | }
+2473 | /** @internal */
+2474 | function throwIfFailed(out) {
+2475 | 	if (!out.failed) return;
+2476 | 	throw buildError(defaultReportMessage(out), out);
+                                                       ^
+error: Property failed after 1 tests
+{ seed: 42, path: "0:1:0:2:2:2:2:2:2", endOnFailure: true }
+Counterexample: ["\na","a",false,false]
+Shrunk 8 time(s)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at throwIfFailed (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2476:49)
+      at assert (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2662:7)
+      at <anonymous> (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/packages/opencode/test/permission/annalin.opencode-strengthened.test.ts:16:6)
+(fail) R4 (strengthened): changing a deletion target preserves denial under an effective rm * rule [7.37ms]
+
+ 0 pass
+ 1 fail
+ 39 expect() calls
+Ran 1 test across 1 file. [871.00ms]
