@@ -1,0 +1,12 @@
+bun test v1.4.2 (744846f84)
+
+test/permission/annalin.property.test.ts:
+(pass) R1: effective deny blocks the execution continuation [423.28ms]
+(pass) R2: ask waits for approval and rejection prevents continuation [2470.17ms]
+(pass) R3: restoring a setting restores the original decision [4.04ms]
+(pass) R4: changing a deletion target preserves denial under rm * [0.99ms]
+
+ 4 pass
+ 0 fail
+ 3048 expect() calls
+Ran 4 tests across 1 file. [4.99s]

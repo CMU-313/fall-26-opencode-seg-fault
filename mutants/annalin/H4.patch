@@ -1,0 +1,17 @@
+diff --git a/packages/opencode/src/permission/index.ts b/packages/opencode/src/permission/index.ts
+index 2e27ff2..f4f49cb 100644
+--- a/packages/opencode/src/permission/index.ts
++++ b/packages/opencode/src/permission/index.ts
+@@ -191,7 +191,11 @@ export function fromConfig(permission: ConfigPermissionV1.Info) {
+       continue
+     }
+     ruleset.push(
+-      ...Object.entries(value).map(([pattern, action]) => ({ permission: key, pattern: expand(pattern), action })),
++      ...Object.entries(value).map(([pattern, action]) => ({
++        permission: key,
++        pattern: expand(pattern),
++        action: action === "allow" ? "ask" : action,
++      })),
+     )
+   }
+   return ruleset

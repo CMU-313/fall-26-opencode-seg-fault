@@ -1,0 +1,80 @@
+bun test v1.4.2 (744846f84)
+
+test/permission/annalin.property.test.ts:
+[21:13:05.214] ERROR (#2): 2464 | 	return defaultReportMessageInternal(out, stringifySecond);
+2465 | }
+2466 | /** @internal */
+2467 | function buildError(errorMessage, out) {
+2468 | 	if (out.runConfiguration.includeErrorInReport) throw new SError(errorMessage);
+2469 | 	const error = new SError(errorMessage, { cause: out.errorInstance });
+                          ^
+error: Property failed after 1 tests
+{ seed: 335305482, path: "0:0:0:0:0:0", endOnFailure: true }
+Counterexample: ["a","allow",0,0]
+Shrunk 5 time(s)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2469:20)
+      at asyncThrowIfFailed (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2481:8)
+      at processTicksAndRejections (native:7:39)
+
+79 |                     metadata: {},
+80 |                     always: [],
+81 |                     ruleset,
+82 |                   })
+83 |                   .pipe(Effect.andThen(Effect.sync(() => continued.push("executed"))), Effect.exit)
+84 |                 expect(Exit.isFailure(result)).toBe(true)
+     ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at toBe (unknown:1:1)
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/packages/opencode/test/permission/annalin.property.test.ts:84:48
+
+2464 | 	return defaultReportMessageInternal(out, stringifySecond);
+2465 | }
+2466 | /** @internal */
+2467 | function buildError(errorMessage, out) {
+2468 | 	if (out.runConfiguration.includeErrorInReport) throw new SError(errorMessage);
+2469 | 	const error = new SError(errorMessage, { cause: out.errorInstance });
+                          ^
+error: Property failed after 1 tests
+{ seed: 335305482, path: "0:0:0:0:0:0", endOnFailure: true }
+Counterexample: ["a","allow",0,0]
+Shrunk 5 time(s)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+      at buildError (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2469:20)
+      at asyncThrowIfFailed (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:2481:8)
+      at processTicksAndRejections (native:7:39)
+
+79 |                     metadata: {},
+80 |                     always: [],
+81 |                     ruleset,
+82 |                   })
+83 |                   .pipe(Effect.andThen(Effect.sync(() => continued.push("executed"))), Effect.exit)
+84 |                 expect(Exit.isFailure(result)).toBe(true)
+     ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at toBe (unknown:1:1)
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/packages/opencode/test/permission/annalin.property.test.ts:84:48
+      at ~effect/Effect/successCont (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:870:26)
+      at runLoop (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:444:98)
+      at evaluate (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:412:23)
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:2127:9
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:2179:19
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/effect@4.0.0-beta.83/node_modules/effect/dist/internal/effect.js:2190:31
+      at /Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/packages/opencode/test/permission/annalin.property.test.ts:88:18
+      at run (/Users/anna/Desktop/17313 fdtns of software dev/fall-26-opencode-seg-fault/node_modules/.bun/fast-check@4.10.2/node_modules/fast-check/lib/fast-check.js:1217:30)
+(fail) R1: effective deny blocks the execution continuation [261.09ms]
+
+ 3 pass
+ 1 fail
+ 2498 expect() calls
+Ran 4 tests across 1 file. [4.26s]
