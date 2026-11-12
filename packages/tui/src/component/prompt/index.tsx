@@ -81,7 +81,7 @@ function pastedFilepath(value: string, platform: string) {
   if (raw.startsWith("file://")) {
     try {
       return fileURLToPath(raw)
-    } catch {}
+    } catch { }
   }
   if (platform === "win32") return raw
   return raw.replace(/\\(.)/g, "$1")
@@ -1058,8 +1058,8 @@ export function Prompt(props: PromptProps) {
     const currentMode = store.mode
     const editorSelection = editorContext()
     const editorParts =
-    editorSelection && editor.labelState() === "pending"
-      ? [
+      editorSelection && editor.labelState() === "pending"
+        ? [
           {
             type: "text" as const,
             text: formatEditorContext(editorSelection),
@@ -1072,7 +1072,7 @@ export function Prompt(props: PromptProps) {
             },
           },
         ]
-      : []
+        : []
 
     const hint = applyHintCommand(inputText, hintLevel())
     if (hint.handled) {
@@ -1529,13 +1529,13 @@ export function Prompt(props: PromptProps) {
             customBorderChars={
               theme.backgroundElement.a !== 0
                 ? {
-                    ...EmptyBorder,
-                    horizontal: "▀",
-                  }
+                  ...EmptyBorder,
+                  horizontal: "▀",
+                }
                 : {
-                    ...EmptyBorder,
-                    horizontal: " ",
-                  }
+                  ...EmptyBorder,
+                  horizontal: " ",
+                }
             }
           />
         </box>

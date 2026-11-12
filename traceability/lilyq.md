@@ -23,12 +23,12 @@
 | R4 | C-6 | The command syntax is exactly `/hint` followed by one ASCII space and one hint-level value. Any leading, trailing, repeated, tab, or newline whitespace in the command arguments is rejected without changing the active level. | Generate an active supported setting and malformed whitespace forms. Assert each is rejected and the active setting is unchanged. | Yes | Invariant | [Not implemented]| N/A |
 | R5 | S-5, S-6, O-7 | Misspelled hint levels and abbreviations must not be applied as a hint level. | Given `detailed` is active, `/hint subtel` and `/hint sub` each display an error and the active level remains `detailed`. | No | Invariant | Generate an active supported setting plus misspellings and proper abbreviations derived from supported settings. Assert neither changes the active setting and each reports an error. [`R5: misspellings and abbreviations are rejected and the active setting is preserved`]| H2, H4 |
 | R6 | C-8, O-6 | When an invalid hint level is a case-insensitive, nonempty proper prefix of exactly one supported hint level, the error message must suggest that supported level without changing the active selection. | Given `/hint sub`, the error message names `subtle` as a suggested level. The active level does not change. | Yes | Model / oracle | Compare suggestions for generated close inputs derived from supported settings with an independent expected-suggestion oracle. [Not implemented] | N/A |
-| R7 | C-5 | Switching hint levels must set the active level to the requested one and must not alter the conversation history. | Starting from `subtle` with N messages in the history, entering `/hint detailed` sets the level to `detailed`, then `/hint subtle` sets it to `subtle`. After both commands the message history is identical to the original N messages. | No | Round-trip | Be on a supported setting with a nonempty history. Switch to a different setting and back; assert the initial setting and history are restored. [Not implemented] | N/A |
+| R7 | C-5 | Switching hint levels must set the active level to the requested one and must not alter the conversation history. | Starting from `subtle` with N messages in the history, entering `/hint detailed` sets the level to `detailed`, then `/hint subtle` sets it to `subtle`. After both commands the message history is identical to the original N messages. | No | Round-trip | Be on a supported setting with a nonempty history. Switch to a different setting and back; assert the initial setting and history are restored. ['R7: handled hint commands cannot fall through to conversation history'] | RT3 |
 | R8 | C-10 | When a user successfully changes their hint level, the command handler must return an informational toast identifying the newly active hint level. | Given `subtle` is active, entering `/hint detailed` returns a handled result with `hintLevel: "detailed"` and an informational toast containing message: `"Hint level: detailed"` and `variant: "info"`. | Yes | Invariant | Generate distinct initial and requested hint levels. Assert that the command handler returns the newly active level and an informational toast identifying that level. [`R8: successful hint changes always provide confirmation`] | H5 |
 
-Properties written or suggested by opencode or another AI tool: R1, R2, R3, R5, R8
+Properties written or suggested by opencode or another AI tool: R1, R2, R3, R5, R7, R8
 
-The R3 metamorphic property was expanded to cover R4 whitespace normalization as well during P5. It compares the result of a canonical command with forms containing repeated spaces, tabs, newlines, and outer whitespace. This expanded scope was motivated by the `.trim()` and `\s+` Stryker survivors.
+During P5, I expanded the R3 metamorphic property to also cover whitespace normalization. It compares canonical commands with variations containing repeated spaces, tabs, newlines, and outer whitespace. Although this behavior conflicts with R4's requirement to reject extra whitespace, I added these cases to test the implementation's existing normalization behavior and kill the `.trim()` and `\s+` Stryker survivors. This revealed a mismatch between the documented requirement and the current implementation that still needs to be resolved.
 
 ## Requirement changes
 
@@ -58,7 +58,7 @@ I did not modify the `/hint` behavior, but I refactored the code to put the `/hi
 
 Stryker mutated `packages/tui/src/prompt/hint.ts` and ran only `test/session/hint.property.test.ts`. It generated 51 mutants: 44 were killed and 7 survived, for a mutation score of 86.27% (44/51). 
 
-Stryker did not generate the exact semantic changes represented by H1–H5: replacing the supported-level message with a generic message, clearing the previous active level after invalid input, removing case normalization, accepting abbreviations as complete settings, or returning a generic confirmation without the new level. Stryker instead applied general syntactic mutations such as regular-expression edits, optional-chaining removal, and conditional-expression changes. Hand-written mutants therefore exercised feature-specific requirements that Stryker could not infer from the implementation alone.
+Stryker did not generate the exact semantic changes represented by H1–H5: replacing the supported-level message with a generic message, clearing the previous active level after invalid input, accepting abbreviations as complete settings, or returning a generic confirmation without the new level. Stryker instead applied general syntactic mutations such as regular-expression edits, optional-chaining removal, and conditional-expression changes. Hand-written mutants therefore exercised feature-specific requirements that Stryker could not infer from the implementation alone.
 
 The first run had seven command-parser survivors:
 
@@ -330,3 +330,30 @@ git diff --check reports pre-existing trailing whitespace in traceability/lilyq.
 ```
 
 </details>
+
+
+
+## Red Team Mutation Defense
+Received from: inseokk
+
+### RT1 — R5: Misspelled hint levels
+
+- **Mutation:** Changed the accepted hint level from `subtle` to `subtel`.
+- **Initial result:** Killed by R3, R5, R8
+- **Evidence:** R5 failed after 53 tests with counterexample [undefined, "subtel"], demonstrating that the invalid misspelling was incorrectly accepted. R3 and R8 also failed because the valid subtle setting was rejected.
+- **Fix:** No additional properties were needed because the existing tests already detected the mutation.
+
+### RT2 — R8: Successful hint changes return informational toast
+
+- **Mutation:** Changed the toast variant for `/hint none` from `info` to `error`.
+- **Initial result:** Killed by R8
+- **Evidence:** R8 failed after 14 tests with counterexample ["detailed", "none"]. The property detected that disabling hints returned an error toast instead of an informational confirmation.
+- **Fix:** No additional properties were needed because the existing tests already detected the mutation.
+
+### RT3 — R7: Hint changes preserve conversation history
+
+- **Mutation:** Removed the early return after handling a `/hint` command, allowing execution to continue into the normal submission flow.
+- **Initial result:** Survived
+- **Reason:** The original properties only tested applyHintCommand() and did not cover the early return in the prompt submission handler.
+- **Fix:** Added an R7 fast-check property that generates supported hint commands and active settings, then checks that the handled-command branch contains an early return before the conversation-history submission path.
+- **Final result:** Killed by the new R7 check, subject to confirming that the property passes with the original implementation restored.

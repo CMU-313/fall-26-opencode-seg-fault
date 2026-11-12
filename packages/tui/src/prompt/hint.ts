@@ -11,11 +11,11 @@ export function applyHintCommand(
 ):
   | { handled: false }
   | {
-      handled: true
-      clearInput: boolean
-      hintLevel: HintLevel | undefined
-      toast: { message: string; variant: "error" | "info" }
-    } {
+    handled: true
+    clearInput: boolean
+    hintLevel: HintLevel | undefined
+    toast: { message: string; variant: "error" | "info" }
+  } {
   const match = input.trim().match(/^\/hint(?:\s+(\S+))?$/)
   if (!match) return { handled: false } as const
 

@@ -1,0 +1,12 @@
+diff --git a/packages/core/src/session/runner/max-steps.ts b/packages/core/src/session/runner/max-steps.ts
+--- a/packages/core/src/session/runner/max-steps.ts
++++ b/packages/core/src/session/runner/max-steps.ts
+@@ -10,7 +10,7 @@
+ Response must include:
+ - Statement that maximum steps for this agent have been reached
+ - Summary of what has been accomplished so far
+- - List of any remaining tasks that were not completed
++ - Briefly describe the overall outcome without discussing unfinished tasks
+ - Recommendations for what should be done next
+ 
+ Any attempt to use tools is a critical violation. Respond with text ONLY.`

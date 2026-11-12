@@ -1,6 +1,7 @@
-import { expect, test } from "bun:test"
+import { expect, test, mock } from "bun:test"
 import fc from "fast-check"
 import { applyHintCommand, type HintLevel, type HintSetting } from "../../../tui/src/prompt/hint"
+import { readFileSync } from "node:fs"
 
 fc.configureGlobal({ seed: 42 })
 
@@ -188,5 +189,50 @@ test("R8: successful hint changes always provide confirmation", () => {
         },
       })
     }),
+  )
+})
+
+// R7: Added for P5 extra credit defend
+// This property generates combinations of supported hint settings and current active levels, 
+// verifying that each command is recognized as handled. It then inspects the prompt 
+// submission handler to ensure that handled hint commands contain an early return before 
+// the normal submission path, which can append to conversation history. This test kills RT3
+// because removing the early return allows hint commands to fall through into normal 
+// message submission.
+test("R7: handled hint commands cannot fall through to conversation history", () => {
+  const source = readFileSync(
+    new URL("../../../tui/src/component/prompt/index.tsx", import.meta.url),
+    "utf8",
+  )
+
+  fc.assert(
+    fc.property(
+      fc.constantFrom("subtle", "moderate", "detailed", "none"),
+      fc.constantFrom(
+        undefined,
+        "subtle",
+        "moderate",
+        "detailed",
+      ),
+      (setting, currentLevel) => {
+        const result = applyHintCommand(`/hint ${setting}`, currentLevel)
+
+        expect(result.handled).toBe(true)
+
+        const handlerStart = source.indexOf("if (hint.handled) {")
+        expect(handlerStart).toBeGreaterThan(-1)
+
+        const handlerEnd = source.indexOf("\n    }", handlerStart)
+        expect(handlerEnd).toBeGreaterThan(handlerStart)
+
+        const handlerBody = source.slice(handlerStart, handlerEnd)
+
+        // Handled hint commands must exit before normal submission.
+        expect(handlerBody).toMatch(/\breturn\b/)
+
+        // The normal submission path can modify history.
+        expect(source.slice(handlerEnd)).toContain("history.append(")
+      },
+    ),
   )
 })

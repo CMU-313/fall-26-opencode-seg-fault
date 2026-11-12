@@ -6,7 +6,7 @@
 `R3: the final allowed step has no tools, carries the max-steps prompt, and runs no tools`
 
 ```diff
-diff --git a/packages/core/src/session/runner/max-steps.ts
+diff --git a/packages/core/src/session/runner/max-steps.ts b/packages/core/src/session/runner/max-steps.ts
 --- a/packages/core/src/session/runner/max-steps.ts
 +++ b/packages/core/src/session/runner/max-steps.ts
 @@ -10,7 +10,7 @@
@@ -29,7 +29,7 @@ This mutant removes the requirement to identify unfinished tasks, so the final s
 `R5: adding a step limit adds exactly the plan instruction to the first request`
 
 ```diff
-diff --git a/packages/core/src/session/runner/max-steps.ts
+diff --git a/packages/core/src/session/runner/max-steps.ts b/packages/core/src/session/runner/max-steps.ts
 --- a/packages/core/src/session/runner/max-steps.ts
 +++ b/packages/core/src/session/runner/max-steps.ts
 @@ -18,4 +18,4 @@
@@ -48,7 +48,7 @@ This mutant changes the planning instruction so the model produces its plan afte
 `R5: adding a step limit adds exactly the plan instruction to the first request`
 
 ```diff
-diff --git a/packages/core/src/session/runner/max-steps.ts
+diff --git a/packages/core/src/session/runner/max-steps.ts b/packages/core/src/session/runner/max-steps.ts
 --- a/packages/core/src/session/runner/max-steps.ts
 +++ b/packages/core/src/session/runner/max-steps.ts
 @@ -18,4 +18,4 @@
